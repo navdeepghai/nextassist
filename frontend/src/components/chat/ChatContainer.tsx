@@ -100,6 +100,7 @@ function ActiveChat({
   const [isThinking, setIsThinking] = useState(false);
   const [activeToolCall, setActiveToolCall] = useState<string | undefined>();
   const [isContinuing, setIsContinuing] = useState(false);
+  const [hasContinued, setHasContinued] = useState(false);
 
   useStreamingResponse({
     sessionId,
@@ -152,6 +153,7 @@ function ActiveChat({
     try {
       const newSession = await continueSession(sessionId);
       if (newSession?.name) {
+        setHasContinued(true);
         await refreshSessions();
         navigate(`/chat/${newSession.name}`);
       }
@@ -198,7 +200,7 @@ function ActiveChat({
           </button>
         </div>
       )}
-      {isLimitReached ? (
+      {isLimitReached && !hasContinued ? (
         <div className="mx-4 mb-4 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
           <div className="flex items-start gap-3">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0 text-red-500">
