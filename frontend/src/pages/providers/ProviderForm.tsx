@@ -68,7 +68,7 @@ const INPUT_CLASS =
 export function ProviderForm() {
   const { provider_name } = useParams<{ provider_name: string }>();
   const navigate = useNavigate();
-  const isNew = provider_name === "new";
+  const isNew = !provider_name || provider_name === "new";
 
   const [form, setForm] = useState<ProviderData>({
     provider_name: "",
