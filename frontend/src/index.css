@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* Markdown code blocks */
+.markdown-content pre {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  border-radius: 8px;
+  padding: 16px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.markdown-content code {
+  font-family: "Fira Code", "Cascadia Code", Menlo, monospace;
+  font-size: 0.875rem;
+}
+
+.markdown-content p code {
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+.dark .markdown-content p code {
+  background: #374151;
+  color: #e5e7eb;
+}
+
+.markdown-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0;
+}
+
+.markdown-content th,
+.markdown-content td {
+  border: 1px solid #e5e7eb;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.markdown-content th {
+  background: #f9fafb;
+  font-weight: 600;
+}
+
+.dark .markdown-content th,
+.dark .markdown-content td {
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+.dark .markdown-content th {
+  background: #1f2937;
+}
+
+/* Dark mode for frappe-charts */
+.dark .chart-container .title,
+.dark .chart-container .subtitle {
+  fill: #e5e7eb;
+}
+
+.dark .chart-container .axis text,
+.dark .chart-container .chart-label {
+  fill: #9ca3af;
+}
+
+.dark .chart-container .axis line,
+.dark .chart-container .axis path {
+  stroke: #374151;
+}
+
+/* Dark mode prose overrides */
+.dark .prose {
+  color: #e5e7eb;
+}
+
+.dark .prose strong {
+  color: #f3f4f6;
+}
+
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3,
+.dark .prose h4 {
+  color: #f3f4f6;
+}
+
+.dark .prose a {
+  color: #60a5fa;
+}
+
+.dark .prose blockquote {
+  color: #9ca3af;
+  border-left-color: #4b5563;
+}
+
+.dark .prose hr {
+  border-color: #374151;
+}
+
+.dark .prose ol > li::marker,
+.dark .prose ul > li::marker {
+  color: #6b7280;
+}

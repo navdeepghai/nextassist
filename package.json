@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "name": "nextassist",
+  "version": "0.0.1",
+  "description": "AI Chatbot Assistant",
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "cd frontend && yarn dev",
+    "build": "cd frontend && yarn build",
+    "postinstall": "cd frontend && yarn install"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,249 @@
+{% extends "templates/web.html" %}
+
+{% block page_content %}
+<style>
+	.na-guide { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1a1a2e; line-height: 1.7; }
+	.na-guide-header { text-align: center; margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid #e5e7eb; }
+	.na-guide-header h1 { font-size: 2rem; font-weight: 700; margin: 0 0 0.5rem; }
+	.na-guide-header p { color: #6b7280; font-size: 1rem; margin: 0; }
+	.na-guide-header .na-badge { display: inline-block; margin-top: 1rem; padding: 0.25rem 0.75rem; background: #eff6ff; color: #2563eb; border-radius: 9999px; font-size: 0.8rem; font-weight: 500; }
+	.na-guide-nav { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 2.5rem; }
+	.na-guide-nav h3 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin: 0 0 0.75rem; font-weight: 600; }
+	.na-guide-nav ul { list-style: none; padding: 0; margin: 0; columns: 2; column-gap: 1.5rem; }
+	.na-guide-nav li { break-inside: avoid; margin-bottom: 0.375rem; }
+	.na-guide-nav a { color: #2563eb; text-decoration: none; font-size: 0.875rem; font-weight: 500; }
+	.na-guide-nav a:hover { text-decoration: underline; }
+	.na-section { margin-bottom: 2.5rem; }
+	.na-section h2 { font-size: 1.5rem; font-weight: 700; margin: 0 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e5e7eb; }
+	.na-section h3 { font-size: 1.125rem; font-weight: 600; margin: 1.5rem 0 0.75rem; }
+	.na-section p { margin: 0 0 0.75rem; font-size: 0.9375rem; }
+	.na-section ol, .na-section ul { padding-left: 1.25rem; margin: 0 0 0.75rem; }
+	.na-section li { margin-bottom: 0.375rem; font-size: 0.9375rem; }
+	.na-table { width: 100%; border-collapse: collapse; margin: 0.75rem 0 1.25rem; font-size: 0.875rem; }
+	.na-table th { text-align: left; padding: 0.5rem 0.75rem; background: #f3f4f6; border: 1px solid #e5e7eb; font-weight: 600; }
+	.na-table td { padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; }
+	.na-table code { background: #f3f4f6; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-size: 0.8125rem; }
+	.na-callout { background: #eff6ff; border-left: 3px solid #2563eb; padding: 0.75rem 1rem; border-radius: 0 0.5rem 0.5rem 0; margin: 0.75rem 0 1.25rem; font-size: 0.875rem; }
+	.na-callout strong { color: #1d4ed8; }
+	.na-models { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin: 0.75rem 0 1.25rem; }
+	.na-model-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem; }
+	.na-model-card h4 { font-size: 0.875rem; font-weight: 600; margin: 0 0 0.5rem; }
+	.na-model-card code { display: block; font-size: 0.8rem; color: #4b5563; margin-bottom: 0.125rem; }
+	.na-back { display: inline-flex; align-items: center; gap: 0.375rem; color: #2563eb; text-decoration: none; font-size: 0.875rem; font-weight: 500; margin-bottom: 1rem; }
+	.na-back:hover { text-decoration: underline; }
+	@media (max-width: 640px) { .na-guide-nav ul { columns: 1; } .na-models { grid-template-columns: 1fr; } }
+</style>
+
+<div class="na-guide">
+	<a href="/nextassist" class="na-back">&larr; Back to NextAssist</a>
+
+	<div class="na-guide-header">
+		<h1>NextAssist User Guide</h1>
+		<p>AI Chatbot Assistant for your Frappe site</p>
+		<span class="na-badge">System Manager access required</span>
+	</div>
+
+	<nav class="na-guide-nav">
+		<h3>Contents</h3>
+		<ul>
+			<li><a href="#getting-started">Getting Started</a></li>
+			<li><a href="#providers">Setting Up AI Providers</a></li>
+			<li><a href="#settings">Application Settings</a></li>
+			<li><a href="#chat">Chat</a></li>
+			<li><a href="#sessions">Sessions</a></li>
+			<li><a href="#schedulers">Schedulers</a></li>
+			<li><a href="#provider-usage">Provider Usage</a></li>
+			<li><a href="#tips">Tips</a></li>
+		</ul>
+	</nav>
+
+	<!-- Getting Started -->
+	<div class="na-section" id="getting-started">
+		<h2>Getting Started</h2>
+		<p>NextAssist is an AI chatbot assistant integrated into your Frappe site. Access it at <strong>/nextassist</strong> from your browser.</p>
+		<div class="na-callout"><strong>Requirement:</strong> You must have the System Manager role to access NextAssist.</div>
+		<p>The main navigation sidebar includes:</p>
+		<ul>
+			<li><strong>Chat</strong> &mdash; Start and continue AI conversations</li>
+			<li><strong>Sessions</strong> &mdash; View and manage chat history</li>
+			<li><strong>Schedulers</strong> &mdash; Set up recurring automated tasks</li>
+			<li><strong>Providers</strong> &mdash; Configure AI provider integrations</li>
+			<li><strong>Settings</strong> &mdash; Application-wide settings</li>
+		</ul>
+	</div>
+
+	<!-- Providers -->
+	<div class="na-section" id="providers">
+		<h2>Setting Up AI Providers</h2>
+		<p>Before using the chat, configure at least one AI provider.</p>
+
+		<h3>Adding a New Provider</h3>
+		<ol>
+			<li>Navigate to <strong>Providers</strong> from the sidebar</li>
+			<li>Click <strong>New Provider</strong></li>
+			<li>Fill in the required fields:</li>
+		</ol>
+		<table class="na-table">
+			<thead><tr><th>Field</th><th>Description</th></tr></thead>
+			<tbody>
+				<tr><td><strong>Provider Name</strong></td><td>A unique name (e.g., "my-openai")</td></tr>
+				<tr><td><strong>Provider Type</strong></td><td>OpenAI, Anthropic, or Google</td></tr>
+				<tr><td><strong>API Key</strong></td><td>Your provider's API key (stored encrypted)</td></tr>
+				<tr><td>Default Model</td><td>Select from the dropdown for your provider type</td></tr>
+				<tr><td>Max Tokens</td><td>Maximum tokens per response (default: 4096)</td></tr>
+				<tr><td>Temperature</td><td>Response randomness, 0&ndash;2 (default: 0.7)</td></tr>
+				<tr><td>Max Context Messages</td><td>Previous messages included as context (default: 20)</td></tr>
+				<tr><td>API Base URL</td><td>Override the default endpoint (optional)</td></tr>
+				<tr><td>Organization ID</td><td>Required for some OpenAI accounts (optional)</td></tr>
+			</tbody>
+		</table>
+		<p>Toggle <strong>Enabled</strong> to activate, and <strong>Default Provider</strong> to make it the default for new chats. Click <strong>Create</strong> to save.</p>
+
+		<h3>Supported Models</h3>
+		<div class="na-models">
+			<div class="na-model-card">
+				<h4>OpenAI</h4>
+				<code>gpt-5.4-pro</code><code>gpt-5.4</code><code>gpt-4.1</code><code>gpt-4.1-mini</code><code>gpt-4.1-nano</code><code>gpt-4o</code><code>gpt-4o-mini</code><code>o4-mini</code><code>o3</code><code>o3-mini</code>
+			</div>
+			<div class="na-model-card">
+				<h4>Anthropic</h4>
+				<code>claude-opus-4-6</code><code>claude-sonnet-4-6</code><code>claude-haiku-4-5</code><code>claude-opus-4-20250514</code><code>claude-sonnet-4-20250514</code><code>claude-haiku-4-5-20251001</code>
+			</div>
+			<div class="na-model-card">
+				<h4>Google</h4>
+				<code>gemini-3.1-pro-preview</code><code>gemini-3.1-flash-lite-preview</code><code>gemini-3-flash-preview</code><code>gemini-2.5-pro</code><code>gemini-2.5-flash</code><code>gemini-2.5-flash-lite</code><code>gemini-2.0-flash</code><code>gemini-2.0-flash-lite</code>
+			</div>
+		</div>
+
+		<h3>Managing Providers</h3>
+		<ul>
+			<li><strong>Edit</strong> &mdash; Click a provider from the list to update settings</li>
+			<li><strong>View/Copy API Key</strong> &mdash; Use the eye icon to reveal the key, copy icon to copy</li>
+			<li><strong>Delete</strong> &mdash; Click Delete on the provider detail page</li>
+		</ul>
+	</div>
+
+	<!-- Settings -->
+	<div class="na-section" id="settings">
+		<h2>Application Settings</h2>
+		<p>Navigate to <strong>Settings</strong> to configure app-wide options:</p>
+		<table class="na-table">
+			<thead><tr><th>Setting</th><th>Description</th></tr></thead>
+			<tbody>
+				<tr><td><strong>Default Provider</strong></td><td>Which AI provider to use for new chats</td></tr>
+				<tr><td><strong>Enable Tool Calling</strong></td><td>Allow the AI to query data, create records, etc.</td></tr>
+				<tr><td><strong>Enable File Uploads</strong></td><td>Allow file attachments in chat messages</td></tr>
+			</tbody>
+		</table>
+	</div>
+
+	<!-- Chat -->
+	<div class="na-section" id="chat">
+		<h2>Chat</h2>
+
+		<h3>Starting a Conversation</h3>
+		<ol>
+			<li>Navigate to <strong>Chat</strong> from the sidebar</li>
+			<li>Click <strong>New Chat</strong></li>
+			<li>Type your message and press <strong>Enter</strong> to send</li>
+		</ol>
+		<p>Use <strong>Shift+Enter</strong> for a new line without sending.</p>
+
+		<h3>Switching Models</h3>
+		<p>Click the <strong>model badge</strong> above the input to open the model switcher. Models are grouped by provider type. You can change models mid-conversation.</p>
+
+		<h3>AI Responses</h3>
+		<p>Responses stream in real-time and can include:</p>
+		<ul>
+			<li><strong>Text</strong> &mdash; Formatted markdown (headings, bold, links, code blocks)</li>
+			<li><strong>Tables</strong> &mdash; Scrollable data tables with formatted columns</li>
+			<li><strong>Charts</strong> &mdash; Bar, line, pie, and percentage charts</li>
+			<li><strong>Lists &amp; Bullets</strong> &mdash; Structured data summaries</li>
+			<li><strong>Files</strong> &mdash; Images as thumbnails, other files as download links</li>
+			<li><strong>Code</strong> &mdash; Toggle visibility with the "Show code" button</li>
+		</ul>
+
+		<h3>File Uploads</h3>
+		<p>When enabled in Settings, attach files (PDFs, images, text) to your messages. The AI reads and analyzes the file content.</p>
+
+		<h3>Token Limits</h3>
+		<div class="na-callout"><strong>80% usage</strong> &mdash; Warning banner appears. <strong>100%</strong> &mdash; Session marked "Limit Reached", start a new chat.</div>
+	</div>
+
+	<!-- Sessions -->
+	<div class="na-section" id="sessions">
+		<h2>Sessions</h2>
+		<p>Navigate to <strong>Sessions</strong> to view all chat sessions.</p>
+
+		<h3>Session List</h3>
+		<p>Shows title, user, status (Active/Limit Reached/Archived), provider, model, token count, and last message time. Use search and status filters to find sessions.</p>
+
+		<h3>View Chat (Preview)</h3>
+		<p>Click <strong>View Chat</strong> to open a full-screen preview that renders the conversation exactly as it appeared &mdash; including charts, tables, formatted text, and errors. The preview has three columns:</p>
+		<ul>
+			<li><strong>Left</strong> &mdash; Session details and statistics</li>
+			<li><strong>Center</strong> &mdash; Chat messages with full rendering</li>
+			<li><strong>Right</strong> &mdash; Message timeline with timestamps</li>
+		</ul>
+
+		<h3>Actions</h3>
+		<ul>
+			<li><strong>View Chat</strong> &mdash; Preview the conversation in a modal</li>
+			<li><strong>Open in Chat</strong> &mdash; Continue the conversation</li>
+			<li><strong>Delete</strong> &mdash; Remove the session and all messages</li>
+		</ul>
+	</div>
+
+	<!-- Schedulers -->
+	<div class="na-section" id="schedulers">
+		<h2>Schedulers</h2>
+		<p>Create recurring automated tasks that run on a cron schedule.</p>
+
+		<h3>Creating a Scheduler</h3>
+		<ol>
+			<li>Navigate to <strong>Schedulers</strong> and click <strong>New Scheduler</strong></li>
+			<li>Set the title and cron expression (e.g., <code>0 9 * * *</code> for daily at 9 AM)</li>
+			<li>Configure the query: DocType, filters, fields, and optional condition</li>
+			<li>Choose an action type and configure it</li>
+		</ol>
+
+		<h3>Action Types</h3>
+		<table class="na-table">
+			<thead><tr><th>Type</th><th>Description</th></tr></thead>
+			<tbody>
+				<tr><td><strong>Email</strong></td><td>Send an email with matched data</td></tr>
+				<tr><td><strong>Notification</strong></td><td>Create a Frappe notification</td></tr>
+				<tr><td><strong>Webhook</strong></td><td>POST data to an external URL</td></tr>
+				<tr><td><strong>Custom Code</strong></td><td>Execute custom Python code</td></tr>
+			</tbody>
+		</table>
+
+		<h3>Monitoring</h3>
+		<p>Each scheduler shows run history with status (success/error/skipped), duration, matched and actioned counts. Error details are preserved for debugging.</p>
+	</div>
+
+	<!-- Provider Usage -->
+	<div class="na-section" id="provider-usage">
+		<h2>Provider Usage</h2>
+		<p>Each provider's detail page shows a <strong>Usage Stats</strong> sidebar:</p>
+		<ul>
+			<li><strong>Tokens Burned</strong> &mdash; Total tokens used across all sessions</li>
+			<li><strong>Active Sessions</strong> &mdash; Currently active sessions</li>
+			<li><strong>Total Sessions</strong> &mdash; All sessions that used this provider</li>
+			<li><strong>Last Used</strong> &mdash; When the provider was last used</li>
+		</ul>
+		<p>The <strong>Recent Sessions</strong> list shows the latest sessions with status indicators, user info, and token counts. Click a session title to open it in chat.</p>
+	</div>
+
+	<!-- Tips -->
+	<div class="na-section" id="tips">
+		<h2>Tips</h2>
+		<ul>
+			<li><strong>Dark Mode</strong> &mdash; Toggle Light/Dark/System theme from the sidebar</li>
+			<li><strong>Keyboard</strong> &mdash; Enter to send, Shift+Enter for new line</li>
+			<li><strong>Context Window</strong> &mdash; Start a new chat when you hit the token limit for best results</li>
+			<li><strong>Multiple Providers</strong> &mdash; Configure several providers and switch between them via Settings or the model switcher</li>
+		</ul>
+	</div>
+</div>
+{% endblock %}
