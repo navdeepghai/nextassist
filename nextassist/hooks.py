@@ -7,7 +7,7 @@ app_description = "AI Chatbot Assistant"
 app_email = "navdeepghai1@gmail.com"
 app_license = "mit"
 
-app_include_js = "nextassist.bundle.js"
+app_include_js = "/assets/nextassist/js/nextassist.bundle.js"
 
 app_logo = "/assets/nextassist/icons/nextassist-logo.svg"
 app_logo_url = "/assets/nextassist/icons/nextassist-logo.svg"
