@@ -584,27 +584,30 @@ export function SchedulerForm() {
         {/* Action */}
         <FormSection title="Action" description="What should happen when matching documents are found?">
           <FormField label="Action Type" required>
-            <select
-              value={form.action_type}
-              onChange={(e) => {
-                const type = e.target.value;
-                updateField("action_type", type);
-                // Set default config template
-                const templates: Record<string, string> = {
-                  email: '{\n  "recipients_field": "",\n  "subject": "",\n  "message": ""\n}',
-                  notification: '{\n  "user_field": "",\n  "subject": "",\n  "message": ""\n}',
-                  webhook: '{\n  "url": "",\n  "method": "POST",\n  "body_template": "{}"\n}',
-                  custom_code: '{\n  "code": ""\n}',
-                };
-                updateField("action_config", templates[type] || "{}");
-              }}
-              className={inputClass}
-            >
-              <option value="email">Email</option>
-              <option value="notification">Notification</option>
-              <option value="webhook">Webhook</option>
-              <option value="custom_code">Custom Code</option>
-            </select>
+            <div className="relative">
+              <select
+                value={form.action_type}
+                onChange={(e) => {
+                  const type = e.target.value;
+                  updateField("action_type", type);
+                  // Set default config template
+                  const templates: Record<string, string> = {
+                    email: '{\n  "recipients_field": "",\n  "subject": "",\n  "message": ""\n}',
+                    notification: '{\n  "user_field": "",\n  "subject": "",\n  "message": ""\n}',
+                    webhook: '{\n  "url": "",\n  "method": "POST",\n  "body_template": "{}"\n}',
+                    custom_code: '{\n  "code": ""\n}',
+                  };
+                  updateField("action_config", templates[type] || "{}");
+                }}
+                className={`${inputClass} appearance-none pr-8`}
+              >
+                <option value="email">Email</option>
+                <option value="notification">Notification</option>
+                <option value="webhook">Webhook</option>
+                <option value="custom_code">Custom Code</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            </div>
           </FormField>
           <FormField
             label="Action Config"

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useFrappeGetCall, useFrappePostCall } from "frappe-react-sdk";
 import { toast } from "sonner";
-import { Bot, Eye, EyeOff, Copy, Check } from "lucide-react";
+import { Bot, Eye, EyeOff, Copy, Check, ChevronDown } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProviderUsageSidebar } from "./ProviderUsageSidebar";
 import {
@@ -89,7 +89,8 @@ export function ProviderForm() {
 
   const { data, isLoading } = useFrappeGetCall<{ message: ProviderData }>(
     "nextassist.api.provider.get_provider",
-    isNew ? undefined : { provider_name }
+    { provider_name },
+    isNew ? null : undefined  // null swrKey skips the fetch entirely when creating new
   );
 
   const { call: saveProvider } = useFrappePostCall(
@@ -251,19 +252,22 @@ export function ProviderForm() {
               />
             </FormField>
             <FormField label="Provider Type" required>
-              <select
-                value={form.provider_type}
-                onChange={(e) => {
-                  updateField("provider_type", e.target.value);
-                  // Reset default_model when provider type changes
-                  updateField("default_model", "");
-                }}
-                className={INPUT_CLASS}
-              >
-                <option value="OpenAI">OpenAI</option>
-                <option value="Anthropic">Anthropic</option>
-                <option value="Google">Google</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={form.provider_type}
+                  onChange={(e) => {
+                    updateField("provider_type", e.target.value);
+                    // Reset default_model when provider type changes
+                    updateField("default_model", "");
+                  }}
+                  className={`${INPUT_CLASS} appearance-none pr-8`}
+                >
+                  <option value="OpenAI">OpenAI</option>
+                  <option value="Anthropic">Anthropic</option>
+                  <option value="Google">Google</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              </div>
             </FormField>
           </FormRow>
         </FormSection>
@@ -272,32 +276,48 @@ export function ProviderForm() {
         <FormSection title="Status">
           <FormRow>
             <FormField label="Enabled">
-              <label className="relative inline-flex items-center cursor-pointer mt-1">
-                <input
-                  type="checkbox"
-                  checked={form.enabled}
-                  onChange={(e) => updateField("enabled", e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-9 h-5 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600" />
-                <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-2 mt-1">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={form.enabled}
+                  onClick={() => updateField("enabled", !form.enabled)}
+                  className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
+                    form.enabled ? "bg-blue-600" : "bg-gray-200 dark:bg-gray-700"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+                      form.enabled ? "translate-x-4" : "translate-x-0.5"
+                    }`}
+                  />
+                </button>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
                   {form.enabled ? "Active" : "Inactive"}
                 </span>
-              </label>
+              </div>
             </FormField>
             <FormField label="Default Provider">
-              <label className="relative inline-flex items-center cursor-pointer mt-1">
-                <input
-                  type="checkbox"
-                  checked={form.is_default}
-                  onChange={(e) => updateField("is_default", e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-9 h-5 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600" />
-                <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-2 mt-1">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={form.is_default}
+                  onClick={() => updateField("is_default", !form.is_default)}
+                  className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
+                    form.is_default ? "bg-blue-600" : "bg-gray-200 dark:bg-gray-700"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+                      form.is_default ? "translate-x-4" : "translate-x-0.5"
+                    }`}
+                  />
+                </button>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
                   {form.is_default ? "Yes" : "No"}
                 </span>
-              </label>
+              </div>
             </FormField>
           </FormRow>
         </FormSection>
@@ -378,18 +398,21 @@ export function ProviderForm() {
         {/* Model Configuration Section */}
         <FormSection title="Model Configuration">
           <FormField label="Default Model">
-            <select
-              value={form.default_model}
-              onChange={(e) => updateField("default_model", e.target.value)}
-              className={INPUT_CLASS}
-            >
-              <option value="">Select a model...</option>
-              {availableModels.map((model) => (
-                <option key={model} value={model}>
-                  {model}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={form.default_model}
+                onChange={(e) => updateField("default_model", e.target.value)}
+                className={`${INPUT_CLASS} appearance-none pr-8`}
+              >
+                <option value="">Select a model...</option>
+                {availableModels.map((model) => (
+                  <option key={model} value={model}>
+                    {model}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            </div>
           </FormField>
           <FormRow>
             <FormField label="Max Tokens">

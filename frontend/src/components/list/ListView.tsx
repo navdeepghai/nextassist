@@ -170,20 +170,23 @@ export function ListView<T>({
               <div key={f.key} className="flex items-center gap-1.5">
                 <label className="text-xs text-gray-500 dark:text-gray-400">{f.label}</label>
                 {f.type === "select" ? (
-                  <select
-                    value={activeFilters[f.key] || ""}
-                    onChange={(e) =>
-                      setActiveFilters((prev) => ({ ...prev, [f.key]: e.target.value }))
-                    }
-                    className="text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
-                  >
-                    <option value="">All</option>
-                    {f.options?.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={activeFilters[f.key] || ""}
+                      onChange={(e) =>
+                        setActiveFilters((prev) => ({ ...prev, [f.key]: e.target.value }))
+                      }
+                      className="appearance-none text-sm border border-gray-200 dark:border-gray-700 rounded-lg pl-2 pr-7 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
+                    >
+                      <option value="">All</option>
+                      {f.options?.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+                  </div>
                 ) : (
                   <input
                     type="text"

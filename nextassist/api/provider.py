@@ -38,7 +38,9 @@ def list_providers():
 
 @frappe.whitelist()
 @frappe.read_only()
-def get_provider(provider_name):
+def get_provider(provider_name=None):
+	if not provider_name:
+		frappe.throw("Provider name is required.")
 	_check_admin()
 	with get_cursor() as cur:
 		cur.execute(

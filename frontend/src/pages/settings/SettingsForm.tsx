@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useFrappeGetCall, useFrappePostCall } from "frappe-react-sdk";
-import { Settings, Save } from "lucide-react";
+import { Settings, Save, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { FormSection, FormField, FormRow } from "@/components/form/FormView";
@@ -132,23 +132,26 @@ export function SettingsForm() {
             {/* AI Provider */}
             <FormSection title="AI Provider">
               <FormField label="Default Provider">
-                <select
-                  value={form.default_provider}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      default_provider: e.target.value,
-                    }))
-                  }
-                  className={inputClass}
-                >
-                  <option value="">Select a provider</option>
-                  {providers.map((p) => (
-                    <option key={p.provider_name} value={p.provider_name}>
-                      {p.provider_name}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    value={form.default_provider}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        default_provider: e.target.value,
+                      }))
+                    }
+                    className={`${inputClass} appearance-none pr-8`}
+                  >
+                    <option value="">Select a provider</option>
+                    {providers.map((p) => (
+                      <option key={p.provider_name} value={p.provider_name}>
+                        {p.provider_name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                </div>
               </FormField>
 
               <FormRow>
