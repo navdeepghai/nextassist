@@ -52,6 +52,13 @@ export function SessionList() {
     await mutate();
   };
 
+  const handleBulkDelete = async (rows: Session[]) => {
+    for (const row of rows) {
+      await deleteSessionApi({ session_id: row.name });
+    }
+    await mutate();
+  };
+
   const columns: Column<Session>[] = [
     {
       key: "title",
@@ -138,6 +145,7 @@ export function SessionList() {
         filters={filters}
         rowKey={(row) => row.name}
         onRowClick={(row) => navigate(`/sessions/${row.name}`)}
+        onBulkDelete={handleBulkDelete}
         emptyTitle="No sessions yet"
         emptyMessage="Sessions are created when you start a new chat."
         actions={(row) => (

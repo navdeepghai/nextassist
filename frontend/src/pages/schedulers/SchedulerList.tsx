@@ -79,6 +79,13 @@ export function SchedulerList() {
     await mutate();
   };
 
+  const handleBulkDelete = async (rows: Scheduler[]) => {
+    for (const row of rows) {
+      await deleteApi({ scheduler_id: row.name });
+    }
+    await mutate();
+  };
+
   const handleToggle = async (row: Scheduler) => {
     await toggleApi({ scheduler_id: row.name, enabled: !row.enabled });
     await mutate();
@@ -207,6 +214,7 @@ export function SchedulerList() {
         filters={filters}
         rowKey={(row) => row.name}
         onRowClick={(row) => navigate(`/schedulers/${row.name}`)}
+        onBulkDelete={handleBulkDelete}
         createPath="/schedulers/new"
         createLabel="New Scheduler"
         emptyTitle="No schedulers yet"

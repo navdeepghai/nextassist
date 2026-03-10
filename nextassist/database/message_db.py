@@ -19,9 +19,9 @@ def create_message(
 ) -> dict:
 	"""Create a message and update the parent session's last_message_at."""
 	mid = new_id()
-	tc_json = json.dumps(tool_calls) if tool_calls else None
-	att_json = json.dumps(attachments) if attachments else "[]"
-	meta_json = json.dumps(metadata) if metadata else None
+	tc_json = json.dumps(tool_calls, default=str) if tool_calls else None
+	att_json = json.dumps(attachments, default=str) if attachments else "[]"
+	meta_json = json.dumps(metadata, default=str) if metadata else None
 
 	with get_cursor() as cur:
 		cur.execute(

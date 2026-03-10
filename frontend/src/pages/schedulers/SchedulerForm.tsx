@@ -96,7 +96,7 @@ const defaultForm: FormState = {
 export function SchedulerForm() {
   const { schedulerId } = useParams<{ schedulerId: string }>();
   const navigate = useNavigate();
-  const isNew = !schedulerId;
+  const isNew = !schedulerId || schedulerId === "new";
   const [editing, setEditing] = useState(isNew);
   const [form, setForm] = useState<FormState>(defaultForm);
 

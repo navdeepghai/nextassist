@@ -65,6 +65,20 @@ def get_provider(provider_name=None):
 		return result
 
 
+def _to_int(value, default):
+	try:
+		return int(value)
+	except (TypeError, ValueError):
+		return default
+
+
+def _to_float(value, default):
+	try:
+		return float(value)
+	except (TypeError, ValueError):
+		return default
+
+
 @frappe.whitelist()
 def save_provider(
 	provider_name,
@@ -93,9 +107,9 @@ def save_provider(
 		"api_base_url": api_base_url,
 		"organization_id": organization_id,
 		"default_model": default_model,
-		"max_tokens": int(max_tokens) if max_tokens else 4096,
-		"temperature": float(temperature) if temperature else 0.7,
-		"max_context_messages": int(max_context_messages) if max_context_messages else 20,
+		"max_tokens": _to_int(max_tokens, 4096),
+		"temperature": _to_float(temperature, 0.7),
+		"max_context_messages": _to_int(max_context_messages, 20),
 	}
 
 	if api_key:

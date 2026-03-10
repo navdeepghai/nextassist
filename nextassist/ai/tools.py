@@ -40,8 +40,11 @@ _SCHEDULER_TOOL_DEFINITION = {
 		"name": "create_scheduler",
 		"description": (
 			"Create a recurring automated task (scheduler) that runs on a cron schedule. "
-			"Use this when the user wants to set up reminders, monitors, alerts, or recurring automations "
-			"like 'email me if Leads haven't changed in 10 days' or 'notify me about overdue purchase orders every Monday'."
+			"ONLY call this when the user has EXPLICITLY requested to create, set up, or schedule a recurring task — "
+			"using clear words like 'create a scheduler', 'set up a daily check', 'remind me every week', "
+			"'email me if...', 'notify me when...', 'alert me about...'. "
+			"NEVER call this proactively or speculatively just because queried data might benefit from monitoring. "
+			"Do NOT call it unless the user directly requests it in the current message."
 		),
 		"parameters": {
 			"type": "object",

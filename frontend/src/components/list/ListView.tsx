@@ -1,6 +1,6 @@
 import { useState, useMemo, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Plus, Filter, ChevronDown, X } from "lucide-react";
+import { Search, Plus, Filter, ChevronDown, X, Trash2 } from "lucide-react";
 
 export interface Column<T> {
   key: string;
@@ -30,6 +30,7 @@ interface ListViewProps<T> {
   createPath?: string;
   createLabel?: string;
   onDelete?: (row: T) => void;
+  onBulkDelete?: (rows: T[]) => Promise<void>;
   emptyTitle?: string;
   emptyMessage?: string;
   actions?: (row: T) => ReactNode;
@@ -48,6 +49,7 @@ export function ListView<T>({
   createPath,
   createLabel,
   onDelete,
+  onBulkDelete,
   emptyTitle,
   emptyMessage,
   actions,
@@ -58,11 +60,12 @@ export function ListView<T>({
   const [showFilters, setShowFilters] = useState(false);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const filtered = useMemo(() => {
     let result = [...data];
 
-    // Text search across all string fields
     if (search) {
       const q = search.toLowerCase();
       result = result.filter((row) =>
@@ -72,7 +75,6 @@ export function ListView<T>({
       );
     }
 
-    // Apply filters
     for (const [key, val] of Object.entries(activeFilters)) {
       if (!val) continue;
       result = result.filter((row) => {
@@ -81,7 +83,6 @@ export function ListView<T>({
       });
     }
 
-    // Sort
     if (sortKey) {
       result.sort((a, b) => {
         const av = (a as Record<string, unknown>)[sortKey] ?? "";
@@ -105,6 +106,51 @@ export function ListView<T>({
 
   const activeFilterCount = Object.values(activeFilters).filter(Boolean).length;
 
+  // Bulk select helpers
+  const filteredKeys = useMemo(() => filtered.map(rowKey), [filtered, rowKey]);
+  const allSelected = filteredKeys.length > 0 && filteredKeys.every((k) => selectedKeys.has(k));
+  const someSelected = filteredKeys.some((k) => selectedKeys.has(k));
+  const selectedRows = filtered.filter((row) => selectedKeys.has(rowKey(row)));
+
+  const toggleRow = (key: string) => {
+    setSelectedKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (allSelected) {
+      setSelectedKeys((prev) => {
+        const next = new Set(prev);
+        filteredKeys.forEach((k) => next.delete(k));
+        return next;
+      });
+    } else {
+      setSelectedKeys((prev) => {
+        const next = new Set(prev);
+        filteredKeys.forEach((k) => next.add(k));
+        return next;
+      });
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!onBulkDelete || selectedRows.length === 0) return;
+    if (!confirm(`Delete ${selectedRows.length} selected item${selectedRows.length > 1 ? "s" : ""}?`)) return;
+    setBulkDeleting(true);
+    try {
+      await onBulkDelete(selectedRows);
+      setSelectedKeys(new Set());
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const isFiltered = search || activeFilterCount > 0;
+
   return (
     <div className="max-w-6xl mx-auto pl-14 md:pl-6 pr-6 py-6">
       {/* Page Header */}
@@ -112,7 +158,14 @@ export function ListView<T>({
         <div className="flex items-center gap-3">
           {icon && <div className="text-gray-400 dark:text-gray-500">{icon}</div>}
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{title}</h1>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              {title}
+              {!loading && (
+                <span className="ml-2 text-base font-normal text-gray-400 dark:text-gray-500">
+                  ({data.length})
+                </span>
+              )}
+            </h1>
             {subtitle && <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{subtitle}</p>}
           </div>
         </div>
@@ -158,8 +211,11 @@ export function ListView<T>({
               )}
             </button>
           )}
-          <span className="text-xs text-gray-400 dark:text-gray-500">
-            {filtered.length} {filtered.length === 1 ? "record" : "records"}
+          <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">
+            {isFiltered && filtered.length !== data.length
+              ? `${filtered.length} of ${data.length}`
+              : `${filtered.length}`}{" "}
+            {filtered.length === 1 ? "record" : "records"}
           </span>
         </div>
 
@@ -213,6 +269,35 @@ export function ListView<T>({
         )}
       </div>
 
+      {/* Bulk Action Bar */}
+      {onBulkDelete && someSelected && (
+        <div className="mb-3 flex items-center justify-between px-4 py-2.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+          <span className="text-sm text-blue-700 dark:text-blue-400 font-medium">
+            {selectedRows.length} item{selectedRows.length > 1 ? "s" : ""} selected
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSelectedKeys(new Set())}
+              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              Clear selection
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 rounded-lg transition-colors"
+            >
+              {bulkDeleting ? (
+                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Trash2 className="w-3.5 h-3.5" />
+              )}
+              Delete selected
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
         {loading ? (
@@ -235,6 +320,17 @@ export function ListView<T>({
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100 dark:border-gray-800">
+                {onBulkDelete && (
+                  <th className="w-10 px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
+                      onChange={toggleAll}
+                      className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                  </th>
+                )}
                 {columns.map((col) => (
                   <th
                     key={col.key}
@@ -262,30 +358,48 @@ export function ListView<T>({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-              {filtered.map((row) => (
-                <tr
-                  key={rowKey(row)}
-                  onClick={() => onRowClick?.(row)}
-                  className={`group ${
-                    onRowClick ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" : ""
-                  } transition-colors`}
-                >
-                  {columns.map((col) => (
-                    <td key={col.key} className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-                      {col.render
-                        ? col.render(row)
-                        : String((row as Record<string, unknown>)[col.key] ?? "")}
-                    </td>
-                  ))}
-                  {(actions || onDelete) && (
-                    <td className="px-4 py-3 text-right">
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        {actions?.(row)}
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
+              {filtered.map((row) => {
+                const key = rowKey(row);
+                const isSelected = selectedKeys.has(key);
+                return (
+                  <tr
+                    key={key}
+                    onClick={() => onRowClick?.(row)}
+                    className={`group transition-colors ${
+                      isSelected
+                        ? "bg-blue-50 dark:bg-blue-900/10"
+                        : onRowClick
+                        ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                        : ""
+                    }`}
+                  >
+                    {onBulkDelete && (
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleRow(key)}
+                          className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        />
+                      </td>
+                    )}
+                    {columns.map((col) => (
+                      <td key={col.key} className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                        {col.render
+                          ? col.render(row)
+                          : String((row as Record<string, unknown>)[col.key] ?? "")}
+                      </td>
+                    ))}
+                    {(actions || onDelete) && (
+                      <td className="px-4 py-3 text-right">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          {actions?.(row)}
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

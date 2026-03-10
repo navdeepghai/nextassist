@@ -3,6 +3,7 @@ import json
 import math
 import re
 from collections import Counter, OrderedDict, defaultdict
+from types import ModuleType
 
 import frappe
 from frappe.utils.safe_exec import safe_exec
@@ -46,6 +47,9 @@ _SAFE_EXEC_GLOBALS = {
 	"int": int,
 	"float": float,
 	"bool": bool,
+	"next": next,
+	"iter": iter,
+	"__name__": "__main__",
 	# ─── Standard library modules (safe for data processing) ───
 	"math": math,
 	"re": re,
@@ -56,6 +60,27 @@ _SAFE_EXEC_GLOBALS = {
 	"ceil": math.ceil,
 	"floor": math.floor,
 	"sqrt": math.sqrt,
+	# ─── json module (AI often writes `import json` which gets stripped) ───
+	"json": json,
+	# ─── Safe __import__ stub — prevents RestrictedPython NameError ───
+	# AI-generated imports are stripped by _sanitize_ai_code, but if any slip
+	# through, this returns a dummy module instead of crashing with '__import__'.
+	"__import__": lambda name, *a, **kw: _SAFE_EXEC_GLOBALS.get(name) or ModuleType(name),
+	# ─── frappe.utils date shortcuts (AI often omits the frappe.utils. prefix) ───
+	"getdate": frappe.utils.getdate,
+	"get_datetime": frappe.utils.get_datetime,
+	"today": frappe.utils.today,
+	"nowdate": frappe.utils.nowdate,
+	"now_datetime": frappe.utils.now_datetime,
+	"add_days": frappe.utils.add_days,
+	"add_months": frappe.utils.add_months,
+	"add_years": frappe.utils.add_years,
+	"date_diff": frappe.utils.date_diff,
+	"get_first_day": frappe.utils.get_first_day,
+	"get_last_day": frappe.utils.get_last_day,
+	"get_year_start": frappe.utils.get_year_start,
+	"get_year_ending": frappe.utils.get_year_ending,
+	"format_date": frappe.utils.format_date,
 }
 
 
@@ -299,8 +324,15 @@ def _fix_augmented_subscript_assignments(code: str) -> str:
 
 def _sanitize_ai_code(code: str) -> str:
 	"""Strip import statements and rewrite datetime/module patterns to use frappe.utils."""
-	# Strip all import lines
-	code = re.sub(r"^(import\s+.+|from\s+.+\s+import\s+.+)\s*$", "", code, flags=re.MULTILINE)
+	# Strip all import lines (including indented ones inside functions/if-blocks)
+	code = re.sub(r"^[ \t]*(import\s+.+|from\s+\S+\s+import\s+.+)\s*$", "", code, flags=re.MULTILINE)
+
+	# Strip semicolon-chained imports: `x = 1; import json; y = 2` → `x = 1;  y = 2`
+	code = re.sub(r";\s*(import\s+\S+|from\s+\S+\s+import\s+\S+)", "", code)
+
+	# Strip direct __import__() calls: `json = __import__('json')` → ``
+	code = re.sub(r"\w+\s*=\s*__import__\s*\([^)]*\)\s*", "", code)
+	code = re.sub(r"__import__\s*\([^)]*\)", "None", code)
 
 	# Rewrite datetime patterns to frappe.utils equivalents
 	code = re.sub(r"\bdatetime\.datetime\.now\(\)", "frappe.utils.now_datetime()", code)
