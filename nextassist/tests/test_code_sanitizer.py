@@ -1,7 +1,7 @@
 """Tests for AI code sanitization and execution pipeline.
 
-These tests verify that _sanitize_ai_code and _fix_augmented_subscript_assignments
-correctly transform AI-generated code to work within Frappe's RestrictedPython sandbox.
+These tests verify that _sanitize_ai_code and _transform_ai_code correctly
+transform AI-generated code to work within Frappe's RestrictedPython sandbox.
 
 Run with:
     bench --site <site> run-tests --app nextassist --module nextassist.tests.test_code_sanitizer
@@ -9,7 +9,12 @@ Run with:
 
 import unittest
 
-from nextassist.ai.streaming import _fix_augmented_subscript_assignments, _sanitize_ai_code
+from nextassist.ai.streaming import _sanitize_ai_code, _transform_ai_code
+
+
+def _pipeline(code: str) -> str:
+	"""Run the full pre-exec transformation pipeline (matches _execute_ai_code order)."""
+	return _transform_ai_code(_sanitize_ai_code(code))
 
 
 class TestSanitizeAICode(unittest.TestCase):
@@ -19,24 +24,25 @@ class TestSanitizeAICode(unittest.TestCase):
 
 	def test_strip_import_statement(self):
 		code = "import datetime\nresult = 1"
-		self.assertNotIn("import datetime", _sanitize_ai_code(code))
-		self.assertIn("result = 1", _sanitize_ai_code(code))
+		out = _pipeline(code)
+		self.assertNotIn("import datetime", out)
+		self.assertIn("result = 1", out)
 
 	def test_strip_from_import(self):
 		code = "from datetime import datetime\nresult = 1"
-		self.assertNotIn("from datetime", _sanitize_ai_code(code))
+		self.assertNotIn("from datetime", _pipeline(code))
 
 	def test_strip_multiple_imports(self):
 		code = "import math\nimport re\nfrom collections import Counter\nresult = 1"
-		sanitized = _sanitize_ai_code(code)
-		self.assertNotIn("import math", sanitized)
-		self.assertNotIn("import re", sanitized)
-		self.assertNotIn("from collections", sanitized)
-		self.assertIn("result = 1", sanitized)
+		out = _pipeline(code)
+		self.assertNotIn("import math", out)
+		self.assertNotIn("import re", out)
+		self.assertNotIn("from collections", out)
+		self.assertIn("result = 1", out)
 
 	def test_strip_multiword_import(self):
 		code = "from datetime import datetime, timedelta\nresult = 1"
-		self.assertNotIn("from datetime", _sanitize_ai_code(code))
+		self.assertNotIn("from datetime", _pipeline(code))
 
 	def test_no_import_unchanged(self):
 		code = "x = 1\nresult = x + 2"
@@ -55,9 +61,9 @@ class TestSanitizeAICode(unittest.TestCase):
 	def test_from_import_then_datetime_now(self):
 		"""The most common AI pattern: from datetime import datetime + datetime.now()."""
 		code = "from datetime import datetime\ncurrent_year = datetime.now().year"
-		sanitized = _sanitize_ai_code(code)
-		self.assertNotIn("import", sanitized)
-		self.assertIn("frappe.utils.now_datetime().year", sanitized)
+		out = _pipeline(code)
+		self.assertNotIn("import", out)
+		self.assertIn("frappe.utils.now_datetime().year", out)
 
 	# ── datetime.today() rewriting ──
 
@@ -105,10 +111,10 @@ revenue_data = frappe.db.sql(f'''
     WHERE docstatus = 1 AND YEAR(posting_date) = {last_year}
 ''', as_dict=True)[0]
 result = {"data": [{"label": "Revenue", "value": float(revenue_data.total_revenue or 0)}], "format": "bullets", "chart": None, "files": [], "error": None}"""
-		sanitized = _sanitize_ai_code(code)
-		self.assertNotIn("import", sanitized)
-		self.assertIn("frappe.utils.now_datetime().year", sanitized)
-		self.assertIn("result =", sanitized)
+		out = _pipeline(code)
+		self.assertNotIn("import", out)
+		self.assertIn("frappe.utils.now_datetime().year", out)
+		self.assertIn("result =", out)
 
 	def test_real_error_timedelta_query(self):
 		"""Real AI code with from datetime import datetime, timedelta."""
@@ -116,9 +122,9 @@ result = {"data": [{"label": "Revenue", "value": float(revenue_data.total_revenu
 ten_years_ago = (datetime.now() - timedelta(days=365 * 10)).strftime('%Y-%m-%d')
 rows = frappe.get_list('Sales Invoice', filters={'posting_date': ['>=', ten_years_ago]}, limit=100)
 result = {'data': rows, 'format': 'table', 'chart': None, 'files': [], 'error': None}"""
-		sanitized = _sanitize_ai_code(code)
-		self.assertNotIn("import", sanitized)
-		self.assertIn("frappe.utils.now_datetime()", sanitized)
+		out = _pipeline(code)
+		self.assertNotIn("import", out)
+		self.assertIn("frappe.utils.now_datetime()", out)
 
 	def test_code_without_datetime_untouched(self):
 		"""Code that doesn't use datetime should pass through unchanged."""
@@ -133,36 +139,36 @@ result = {"data": [{"date": today}], "format": "bullets", "chart": None, "files"
 		self.assertEqual(_sanitize_ai_code(code), code)
 
 
-class TestFixAugmentedSubscriptAssignments(unittest.TestCase):
-	"""Test AST transformation of d[key] += value."""
+class TestTransformAICode(unittest.TestCase):
+	"""Test AST transformation: import removal and d[key] += value rewriting."""
 
 	def test_basic_augmented_add(self):
 		code = 'd = {}\nd["x"] = 0\nd["x"] += 1'
-		fixed = _fix_augmented_subscript_assignments(code)
+		fixed = _transform_ai_code(code)
 		self.assertNotIn("+=", fixed)
 		self.assertIn("d['x'] = d['x'] + 1", fixed)
 
 	def test_augmented_subtract(self):
 		code = 'd["count"] -= 5'
-		fixed = _fix_augmented_subscript_assignments(code)
+		fixed = _transform_ai_code(code)
 		self.assertNotIn("-=", fixed)
 		self.assertIn("d['count'] = d['count'] - 5", fixed)
 
 	def test_augmented_multiply(self):
 		code = 'd["val"] *= 2'
-		fixed = _fix_augmented_subscript_assignments(code)
+		fixed = _transform_ai_code(code)
 		self.assertNotIn("*=", fixed)
 		self.assertIn("d['val'] = d['val'] * 2", fixed)
 
 	def test_normal_assignment_untouched(self):
 		code = 'd["x"] = 1'
-		fixed = _fix_augmented_subscript_assignments(code)
+		fixed = _transform_ai_code(code)
 		self.assertIn("d['x'] = 1", fixed)
 
 	def test_variable_augmented_untouched(self):
 		"""x += 1 should NOT be rewritten (only subscript augmented is forbidden)."""
 		code = "x = 0\nx += 1"
-		fixed = _fix_augmented_subscript_assignments(code)
+		fixed = _transform_ai_code(code)
 		self.assertIn("x += 1", fixed)
 
 	def test_real_error_pattern(self):
@@ -173,28 +179,53 @@ for row in rows:
     if status not in status_totals:
         status_totals[status] = 0
     status_totals[status] += float(row.get("grand_total", 0))"""
-		fixed = _fix_augmented_subscript_assignments(code)
+		fixed = _transform_ai_code(code)
 		self.assertNotIn("+=", fixed)
 		self.assertIn("status_totals[status] = status_totals[status] + float", fixed)
 
 	def test_nested_subscript(self):
 		code = 'data["totals"]["revenue"] += amount'
-		fixed = _fix_augmented_subscript_assignments(code)
+		fixed = _transform_ai_code(code)
 		self.assertNotIn("+=", fixed)
 
 	def test_syntax_error_passthrough(self):
-		"""Invalid syntax should return code as-is."""
+		"""Truly invalid syntax (not fixable by rescue pass) should return code as-is."""
 		code = "this is not valid python {{"
-		self.assertEqual(_fix_augmented_subscript_assignments(code), code)
+		self.assertEqual(_transform_ai_code(code), code)
 
 	def test_multiple_augmented_in_loop(self):
 		code = """d = {}
 for i in range(5):
     d["a"] += i
     d["b"] -= i"""
-		fixed = _fix_augmented_subscript_assignments(code)
+		fixed = _transform_ai_code(code)
 		self.assertNotIn("+=", fixed)
 		self.assertNotIn("-=", fixed)
+
+	def test_indented_import_in_if_block(self):
+		"""Indented import inside if-block is removed; pass inserted so block stays valid."""
+		code = "if True:\n    import datetime\nx = 1"
+		fixed = _transform_ai_code(code)
+		self.assertNotIn("import datetime", fixed)
+		self.assertIn("x = 1", fixed)
+		# Must be valid Python (no SyntaxError)
+		compile(fixed, "<string>", "exec")
+
+	def test_indented_import_only_body(self):
+		"""if-block with only an import gets a pass statement so it remains valid."""
+		code = "for item in items:\n    import os\n    import sys"
+		fixed = _transform_ai_code(code)
+		self.assertNotIn("import os", fixed)
+		self.assertNotIn("import sys", fixed)
+		compile(fixed, "<string>", "exec")
+
+	def test_rescue_parse_empty_block(self):
+		"""Rescue pass handles pre-broken code with empty block headers."""
+		# Simulate code that already has an empty block (e.g. from other preprocessing)
+		code = "if True:\nresult = 1"
+		# This is a SyntaxError — rescue pass should insert `pass` and produce valid code
+		fixed = _transform_ai_code(code)
+		self.assertIn("result = 1", fixed)
 
 
 class TestFullPipeline(unittest.TestCase):
@@ -206,8 +237,7 @@ class TestFullPipeline(unittest.TestCase):
 d = {}
 d["year"] = datetime.now().year
 d["count"] += 1"""
-		sanitized = _sanitize_ai_code(code)
-		fixed = _fix_augmented_subscript_assignments(sanitized)
+		fixed = _pipeline(code)
 		self.assertNotIn("import", fixed)
 		self.assertNotIn("+=", fixed)
 		self.assertIn("frappe.utils.now_datetime().year", fixed)
@@ -217,8 +247,7 @@ d["count"] += 1"""
 		code = """today = frappe.utils.today()
 rows = frappe.get_list("Sales Invoice", limit=10)
 result = {"data": rows, "format": "table", "chart": None, "files": [], "error": None}"""
-		sanitized = _sanitize_ai_code(code)
-		fixed = _fix_augmented_subscript_assignments(sanitized)
+		fixed = _pipeline(code)
 		self.assertIn("frappe.utils.today()", fixed)
 		self.assertIn("result =", fixed)
 
@@ -255,8 +284,7 @@ result = {
     "files": [],
     "error": None
 }"""
-		sanitized = _sanitize_ai_code(code)
-		fixed = _fix_augmented_subscript_assignments(sanitized)
+		fixed = _pipeline(code)
 		self.assertNotIn("import", fixed)
 		self.assertNotIn("+=", fixed)
 		self.assertIn("frappe.utils.now_datetime().year", fixed)
@@ -275,13 +303,13 @@ class TestSanitizeEdgeCases(unittest.TestCase):
 
 	def test_empty_code(self):
 		self.assertEqual(_sanitize_ai_code(""), "")
-		self.assertEqual(_fix_augmented_subscript_assignments(""), "")
+		self.assertEqual(_transform_ai_code(""), "")
 
 	def test_only_imports(self):
 		code = "import datetime\nfrom collections import Counter"
-		sanitized = _sanitize_ai_code(code)
-		# Should have only whitespace/empty lines left
-		self.assertNotIn("import", sanitized.strip())
+		out = _pipeline(code)
+		# All imports stripped — result should have no import statements
+		self.assertNotIn("import", out.strip())
 
 	def test_datetime_in_sql_string_not_rewritten(self):
 		"""datetime inside SQL strings should ideally not be affected."""

@@ -67,6 +67,7 @@ _SAFE_EXEC_GLOBALS = {
 	# through, this returns a dummy module instead of crashing with '__import__'.
 	"__import__": lambda name, *a, **kw: _SAFE_EXEC_GLOBALS.get(name) or ModuleType(name),
 	# ─── frappe.utils date shortcuts (AI often omits the frappe.utils. prefix) ───
+	"date": frappe.utils.getdate,  # AI sometimes calls date(...) directly
 	"getdate": frappe.utils.getdate,
 	"get_datetime": frappe.utils.get_datetime,
 	"today": frappe.utils.today,
@@ -277,19 +278,69 @@ def _build_messages_from_history(session_name: str, config: dict) -> list[dict]:
 	return messages
 
 
-def _fix_augmented_subscript_assignments(code: str) -> str:
-	"""Transform d[key] += value into d[key] = d[key] + value.
+def _transform_ai_code(code: str) -> str:
+	"""Remove import statements and fix augmented subscripts in one AST pass.
 
-	RestrictedPython forbids augmented assignment on subscripts (e.g., d["x"] += 1)
-	but allows regular subscript assignment (d["x"] = d["x"] + 1). This AST
-	transformation rewrites the former into the latter.
+	Combines two transformations:
+	1. Import removal: strips Import/ImportFrom nodes and inserts `pass` into
+	   blocks that become empty (prevents SyntaxError from empty if/for/def bodies
+	   that occur when regex pre-processing strips indented imports).
+	2. Augmented subscript fix: rewrites `d[k] += v` → `d[k] = d[k] + v`
+	   (RestrictedPython forbids augmented assignment on subscripts).
+
+	If the code can't be parsed initially, a rescue pass first inserts `pass`
+	after bare block headers and retries before giving up.
 	"""
-	try:
-		tree = ast.parse(code)
-	except SyntaxError:
-		return code  # Return as-is; safe_exec will report the syntax error
 
-	class AugAssignFixer(ast.NodeTransformer):
+	class _CodeTransformer(ast.NodeTransformer):
+		@staticmethod
+		def _strip_imports(stmts: list) -> list:
+			"""Remove Import/ImportFrom nodes; insert Pass if block would become empty."""
+			kept = [s for s in stmts if not isinstance(s, (ast.Import, ast.ImportFrom))]
+			# If all statements were imports the block is now empty — insert pass
+			if not kept and stmts:
+				return [ast.Pass()]
+			return kept
+
+		def visit_Module(self, node):
+			self.generic_visit(node)
+			node.body = self._strip_imports(node.body)
+			# Empty module is valid Python; no need to insert pass at top level
+			return node
+
+		def visit_If(self, node):
+			self.generic_visit(node)
+			node.body = self._strip_imports(node.body)
+			if node.orelse:
+				node.orelse = self._strip_imports(node.orelse)
+			return node
+
+		def _visit_block(self, node):
+			self.generic_visit(node)
+			node.body = self._strip_imports(node.body)
+			return node
+
+		visit_For = _visit_block
+		visit_While = _visit_block
+		visit_With = _visit_block
+		visit_FunctionDef = _visit_block
+		visit_AsyncFunctionDef = _visit_block
+		visit_ClassDef = _visit_block
+
+		def visit_Try(self, node):
+			self.generic_visit(node)
+			node.body = self._strip_imports(node.body)
+			if node.orelse:
+				node.orelse = self._strip_imports(node.orelse)
+			if node.finalbody:
+				node.finalbody = self._strip_imports(node.finalbody)
+			return node
+
+		def visit_ExceptHandler(self, node):
+			self.generic_visit(node)
+			node.body = self._strip_imports(node.body)
+			return node
+
 		def visit_AugAssign(self, node):
 			self.generic_visit(node)
 			if isinstance(node.target, ast.Subscript):
@@ -317,17 +368,38 @@ def _fix_augmented_subscript_assignments(code: str) -> str:
 				return ast.copy_location(new_node, node)
 			return node
 
-	tree = AugAssignFixer().visit(tree)
+	def _rescue_parse(src: str) -> ast.AST:
+		"""Insert `pass` after bare block headers (empty colon-terminated lines) and retry."""
+		fixed = re.sub(
+			r"(^[ \t]*(?:if|elif|else|for|while|with|def|async\s+def|class|try|except|finally)[^:\n]*:)\s*$",
+			r"\1\n    pass",
+			src,
+			flags=re.MULTILINE,
+		)
+		return ast.parse(fixed)
+
+	try:
+		tree = ast.parse(code)
+	except SyntaxError:
+		try:
+			tree = _rescue_parse(code)
+		except SyntaxError:
+			return code  # Truly unparseable; safe_exec will report the syntax error
+
+	tree = _CodeTransformer().visit(tree)
 	ast.fix_missing_locations(tree)
 	return ast.unparse(tree)
 
 
 def _sanitize_ai_code(code: str) -> str:
-	"""Strip import statements and rewrite datetime/module patterns to use frappe.utils."""
-	# Strip all import lines (including indented ones inside functions/if-blocks)
-	code = re.sub(r"^[ \t]*(import\s+.+|from\s+\S+\s+import\s+.+)\s*$", "", code, flags=re.MULTILINE)
+	"""Pre-parse cleanup and datetime pattern rewriting.
 
+	Import removal is handled by _transform_ai_code (AST-based), which safely
+	inserts `pass` into blocks that become empty. This function only performs
+	regex cleanup that must happen *before* AST parsing.
+	"""
 	# Strip semicolon-chained imports: `x = 1; import json; y = 2` → `x = 1;  y = 2`
+	# (These can appear mid-line and confuse the AST parser)
 	code = re.sub(r";\s*(import\s+\S+|from\s+\S+\s+import\s+\S+)", "", code)
 
 	# Strip direct __import__() calls: `json = __import__('json')` → ``
@@ -362,8 +434,8 @@ def _execute_ai_code(content: str) -> dict | None:
 		return None
 
 	code = match.group(1)
-	code = _sanitize_ai_code(code)
-	code = _fix_augmented_subscript_assignments(code)
+	code = _sanitize_ai_code(code)   # pre-parse regex cleanup + datetime rewrites
+	code = _transform_ai_code(code)  # AST: remove imports, fix augmented subscripts
 
 	# Security validation BEFORE execution
 	violations = validate_ai_code(code)
