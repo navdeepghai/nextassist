@@ -13,6 +13,39 @@ from nextassist.ai.provider_factory import get_provider
 from nextassist.ai.tools import execute_tool, get_tool_definitions
 from nextassist.database import message_db, session_db, settings_db
 
+# ── Safe strftime replacement ────────────────────────────────────────────────
+# Python's date.strftime('%B') triggers a lazy import of _strptime inside
+# RestrictedPython's sandbox, causing '__import__' error. This pure-Python
+# replacement handles common format codes without triggering any imports.
+_MONTHS = [
+	"", "January", "February", "March", "April", "May", "June",
+	"July", "August", "September", "October", "November", "December",
+]
+_SHORT_MONTHS = [
+	"", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+]
+_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+_SHORT_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+
+def _safe_strftime(date_val, fmt):
+	"""strftime replacement that works inside RestrictedPython sandbox."""
+	d = frappe.utils.getdate(date_val) if isinstance(date_val, str) else date_val
+	result = fmt
+	result = result.replace("%B", _MONTHS[d.month])
+	result = result.replace("%b", _SHORT_MONTHS[d.month])
+	result = result.replace("%A", _DAYS[d.weekday()])
+	result = result.replace("%a", _SHORT_DAYS[d.weekday()])
+	result = result.replace("%Y", str(d.year))
+	result = result.replace("%y", str(d.year)[-2:])
+	result = result.replace("%m", str(d.month).zfill(2))
+	result = result.replace("%d", str(d.day).zfill(2))
+	result = result.replace("%-d", str(d.day))
+	result = result.replace("%-m", str(d.month))
+	return result
+
+
 # ── Safe globals injected into AI code execution environment ─────────────────
 # RestrictedPython's safe_builtins may not include all standard Python builtins.
 # Since _sanitize_ai_code strips import statements, we inject the commonly-used
@@ -82,6 +115,8 @@ _SAFE_EXEC_GLOBALS = {
 	"get_year_start": frappe.utils.get_year_start,
 	"get_year_ending": frappe.utils.get_year_ending,
 	"format_date": frappe.utils.format_date,
+	# ─── Safe strftime (avoids __import__ error from lazy _strptime import) ───
+	"_safe_strftime": _safe_strftime,
 }
 
 
@@ -341,6 +376,19 @@ def _transform_ai_code(code: str) -> str:
 			node.body = self._strip_imports(node.body)
 			return node
 
+		def visit_Call(self, node):
+			self.generic_visit(node)
+			# Rewrite obj.strftime(fmt) → _safe_strftime(obj, fmt)
+			# Python's strftime triggers lazy import of _strptime in sandbox
+			if isinstance(node.func, ast.Attribute) and node.func.attr == "strftime":
+				new_node = ast.Call(
+					func=ast.Name(id="_safe_strftime", ctx=ast.Load()),
+					args=[node.func.value] + node.args,
+					keywords=node.keywords,
+				)
+				return ast.copy_location(new_node, node)
+			return node
+
 		def visit_AugAssign(self, node):
 			self.generic_visit(node)
 			if isinstance(node.target, ast.Subscript):
@@ -398,6 +446,11 @@ def _sanitize_ai_code(code: str) -> str:
 	inserts `pass` into blocks that become empty. This function only performs
 	regex cleanup that must happen *before* AST parsing.
 	"""
+	# Strip standalone import lines (backup before AST pass — catches imports even if AST parse fails)
+	code = re.sub(
+		r"^\s*(?:import\s+\w[\w.,\s]*|from\s+\w[\w.]*\s+import\s+.+)$", "", code, flags=re.MULTILINE
+	)
+
 	# Strip semicolon-chained imports: `x = 1; import json; y = 2` → `x = 1;  y = 2`
 	# (These can appear mid-line and confuse the AST parser)
 	code = re.sub(r";\s*(import\s+\S+|from\s+\S+\s+import\s+\S+)", "", code)
@@ -418,6 +471,12 @@ def _sanitize_ai_code(code: str) -> str:
 	code = re.sub(r"\bdatetime\.strptime\(([^,]+),\s*[^)]+\)", r"frappe.utils.get_datetime(\1)", code)
 	code = re.sub(r"\btimedelta\(days=(\d+)\)", r"frappe.utils.to_timedelta(days=\1)", code)
 	code = re.sub(r"\bdatetime\.date\(", "frappe.utils.getdate(str(", code)
+
+	# Rewrite .format() / .format_map() calls — blocked by RestrictedPython UNSAFE_ATTRIBUTES
+	# Convert patterns like '"{:,.2f}".format(x)' or "'{}'.format(x)" to str(x)
+	code = re.sub(r'"[^"]*"\.format\(([^)]*)\)', r"str(\1)", code)
+	code = re.sub(r"'[^']*'\.format\(([^)]*)\)", r"str(\1)", code)
+	code = re.sub(r"\.format_map\(", ".update(", code)  # fallback — will likely error but won't crash sandbox
 
 	# NOTE: We intentionally do NOT replace frappe.has_permission() with True.
 	# That was a security bypass. Let safe_exec enforce permission checks naturally.
@@ -447,7 +506,7 @@ def _execute_ai_code(content: str) -> dict | None:
 		)
 		return {
 			"data": [],
-			"format": "table",
+			"layout": "table",
 			"chart": None,
 			"files": [],
 			"error": f"Code blocked by security policy: {violation_msg}",
@@ -468,7 +527,7 @@ def _execute_ai_code(content: str) -> dict | None:
 		)
 		return {
 			"data": [],
-			"format": "table",
+			"layout": "table",
 			"chart": None,
 			"files": [],
 			"error": "Code executed but did not produce a valid result.",
@@ -478,7 +537,7 @@ def _execute_ai_code(content: str) -> dict | None:
 			title="NextAssist: Code execution error",
 			message=f"Error: {e}\n\nCode:\n{code}",
 		)
-		return {"data": [], "format": "table", "chart": None, "files": [], "error": str(e)}
+		return {"data": [], "layout": "table", "chart": None, "files": [], "error": str(e)}
 
 
 def _stream_with_tools(

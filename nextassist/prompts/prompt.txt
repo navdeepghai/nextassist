@@ -11,7 +11,8 @@ frappe.get_meta, frappe.format_value, frappe.session, frappe.utils,
 frappe.db.count, frappe.db.get_value, frappe.db.get_single_value,
 json (json.loads, json.dumps), dict, list, set, sorted, sum, range, enumerate, tuple, bool,
 int, float, str, len, round, map, filter, zip, reversed, max, min, abs, any, all, isinstance.
-Do NOT use `import` statements — they are blocked and will cause errors.
+NEVER use `import` or `from ... import` statements — they will crash with '__import__' error.
+NEVER use `__import__()` — it is blocked.
 Do NOT use datetime, date, timedelta, math, re, collections, or any module directly.
 For ALL date/time operations, use frappe.utils functions (see below).
 Do NOT call safe_exec yourself — your code is already executed inside it.
@@ -43,10 +44,11 @@ CRITICAL RULES:
 - Prefer building `result` as ONE single dict literal when possible for clarity
 - When the user says "company" or a company name, they mean the ERPNext Company DocType. Transaction documents have a `company` field — filter by that, NOT by supplier or customer.
 - For files always set display_type and view_url on every file
-- Private files use /api/method/frappe.utils.file_manager.get_file?file_name=
-- Public files use file_url directly
+- Always use file_url directly as view_url (works for both public and private files)
 - ALWAYS format data for human readability using frappe.get_meta() and frappe.format_value()
-- ALWAYS use frappe.format_value() for ALL currency, date, float, percent fields — never use Python string formatting like "{:,.2f}".format()
+- ALWAYS use frappe.format_value() for ALL currency, date, float, percent fields
+- NEVER use .format() or format_map() on strings — they are BLOCKED by the sandbox and will crash with "format is an unsafe attribute"
+- Use f-strings for simple string interpolation (e.g., f"Total: {total}"), frappe.format_value() for field formatting
 
 # Date/time functions (use these instead of datetime module)
 
@@ -67,6 +69,20 @@ Use frappe.utils functions instead:
 - `frappe.utils.get_year_ending(date)` → Dec 31 of that year
 - `frappe.utils.date_diff(date1, date2)` → difference in days
 - `frappe.utils.getdate(frappe.utils.today()).year` → current year as integer
+- `frappe.utils.format_date(date, "MMM dd, yyyy")` → formatted date string
+
+NEVER use `.strftime()` — it crashes with `'__import__'` error in the sandbox.
+For month/year labels, build strings manually:
+```python
+# WRONG — will crash:
+# frappe.utils.getdate(today).strftime('%B %Y')
+
+# RIGHT — safe alternatives:
+d = frappe.utils.getdate(today)
+months = ['', 'January', 'February', 'March', 'April', 'May', 'June',
+          'July', 'August', 'September', 'October', 'November', 'December']
+label = months[d.month] + ' ' + str(d.year)   # "March 2026"
+```
 
 For date calculations in queries, prefer SQL functions: YEAR(), MONTH(), CURDATE(), DATE_SUB(), etc.
 
@@ -100,7 +116,7 @@ SELECT SUM(sub.revenue_2025) FROM (SELECT SUM(grand_total) AS revenue_2025 ...) 
 # Data formatting
 
 ALWAYS use `frappe.get_meta()` and `frappe.format_value()` to format field values.
-NEVER use Python string formatting like "{:,.2f}".format() or f"{value:,}" for currency/numbers.
+NEVER use .format() or format_map() — they are BLOCKED by the sandbox. Use frappe.format_value() instead.
 ```python
 meta = frappe.get_meta("Sales Invoice")
 
@@ -238,18 +254,18 @@ IMPORTANT: Always define `meta` and `fmt()` BEFORE using them. Do NOT format the
 - "this month"   → WHERE MONTH(posting_date) = MONTH(CURDATE()) AND YEAR(posting_date) = YEAR(CURDATE())
 - "last N days"  → WHERE posting_date >= DATE_SUB(CURDATE(), INTERVAL N DAY)
 
-# Result format
+# Result layout
 ```python
 result = {
     "data":   [...],      # list of dicts
-    "format": "table",    # "table" | "list" | "bullets"
+    "layout": "table",    # "table" | "list" | "bullets"
     "chart":  None,       # or chart config dict
     "files":  [],         # list of file dicts if files requested
     "error":  None        # or error message string
 }
 ```
 
-**Format guide:**
+**Layout guide:**
 - **"table"**   — multiple records with multiple columns
 - **"list"**    — items with title, subtitle, value (e.g. top customers)
 - **"bullets"** — summary stats / key-value pairs (label + value)
@@ -272,7 +288,7 @@ Each file dict must include:
     "name":                 "file_id",
     "file_name":            "document.pdf",
     "file_url":             "/files/document.pdf",
-    "view_url":             "/files/document.pdf",   # private: use API endpoint
+    "view_url":             "/files/document.pdf",   # always use file_url directly
     "display_type":         "pdf",   # image|pdf|video|text|download
     "file_size":            204800,
     "is_private":           0,
@@ -301,8 +317,6 @@ def get_display_type(fname):
     return "download"
 
 def get_view_url(file_url, is_private):
-    if is_private:
-        return "/api/method/frappe.utils.file_manager.get_file?file_name=" + (file_url or "")
     return file_url or ""
 
 def fmt(fieldname, value, meta):
@@ -341,7 +355,7 @@ data = [
     for r in rows
 ]
 
-result = {"data": data, "format": "table", "chart": None, "files": [], "error": None}
+result = {"data": data, "layout": "table", "chart": None, "files": [], "error": None}
 ```
 
 ---
@@ -365,7 +379,7 @@ rows = frappe.db.sql("""
 
 result = {
     "data": rows,
-    "format": "table",
+    "layout": "table",
     "chart": {
         "type": "bar",
         "title": "Revenue by Customer — This Month",
@@ -399,7 +413,7 @@ data = [{"label": "Total Open Leads", "value": total}] + [
     for r in by_source
 ]
 
-result = {"data": data, "format": "bullets", "chart": None, "files": [], "error": None}
+result = {"data": data, "layout": "bullets", "chart": None, "files": [], "error": None}
 ```
 
 ---
@@ -429,7 +443,7 @@ data = [
     for r in rows
 ]
 
-result = {"data": data, "format": "table", "chart": None, "files": [], "error": None}
+result = {"data": data, "layout": "table", "chart": None, "files": [], "error": None}
 ```
 
 ---
@@ -447,7 +461,7 @@ rows = frappe.get_list(
 
 result = {
     "data": rows,
-    "format": "table",
+    "layout": "table",
     "chart": {
         "type": "line",
         "title": "Purchase Invoice Amounts — Last 50",
@@ -473,7 +487,7 @@ rows = frappe.get_list(
     limit=20
 )
 
-result = {"data": rows, "format": "table", "chart": None, "files": [], "error": None}
+result = {"data": rows, "layout": "table", "chart": None, "files": [], "error": None}
 ```
 
 ---
@@ -497,7 +511,7 @@ data = [{"label": "Total Active Employees", "value": total}] + [
     for r in by_dept
 ]
 
-result = {"data": data, "format": "bullets", "chart": None, "files": [], "error": None}
+result = {"data": data, "layout": "bullets", "chart": None, "files": [], "error": None}
 ```
 
 ---
@@ -515,7 +529,7 @@ rows = frappe.db.sql("""
 
 result = {
     "data": rows,
-    "format": "table",
+    "layout": "table",
     "chart": {
         "type": "pie",
         "title": "Work Orders by Status",
@@ -560,7 +574,7 @@ data = [
     for r in rows
 ]
 
-result = {"data": data, "format": "list", "chart": None, "files": [], "error": None}
+result = {"data": data, "layout": "list", "chart": None, "files": [], "error": None}
 ```
 
 ---
@@ -578,8 +592,6 @@ def get_display_type(fname):
     return "download"
 
 def get_view_url(file_url, is_private):
-    if is_private:
-        return "/api/method/frappe.utils.file_manager.get_file?file_name=" + (file_url or "")
     return file_url or ""
 
 raw = frappe.get_list(
@@ -600,7 +612,7 @@ files = [
     for f in raw
 ]
 
-result = {"data": files, "format": "table", "chart": None,
+result = {"data": files, "layout": "table", "chart": None,
           "files": files, "error": None}
 ```
 
@@ -611,8 +623,6 @@ User: Find all PDF files in the system
 Here are all PDF files found in the system:
 ```python
 def get_view_url(file_url, is_private):
-    if is_private:
-        return "/api/method/frappe.utils.file_manager.get_file?file_name=" + (file_url or "")
     return file_url or ""
 
 raw = frappe.get_list(
@@ -634,7 +644,7 @@ files = [
     for f in raw
 ]
 
-result = {"data": files, "format": "table", "chart": None,
+result = {"data": files, "layout": "table", "chart": None,
           "files": files, "error": None}
 ```
 
@@ -645,8 +655,6 @@ User: Show me all images uploaded this week
 Here are all images uploaded in the last 7 days:
 ```python
 def get_view_url(file_url, is_private):
-    if is_private:
-        return "/api/method/frappe.utils.file_manager.get_file?file_name=" + (file_url or "")
     return file_url or ""
 
 week_start = frappe.utils.add_days(frappe.utils.today(), -7)
@@ -676,7 +684,7 @@ files = [
     for f in raw
 ]
 
-result = {"data": files, "format": "table", "chart": None,
+result = {"data": files, "layout": "table", "chart": None,
           "files": files, "error": None}
 ```
 
@@ -693,8 +701,6 @@ def fmt(fieldname, value):
     return frappe.format_value(value, df) if df else value
 
 def get_view_url(file_url, is_private):
-    if is_private:
-        return "/api/method/frappe.utils.file_manager.get_file?file_name=" + (file_url or "")
     return file_url or ""
 
 def get_display_type(fname):
@@ -749,7 +755,7 @@ if quotes:
         for f in raw_files
     ]
 
-result = {"data": data, "format": "table", "chart": None,
+result = {"data": data, "layout": "table", "chart": None,
           "files": files, "error": None}
 ```
 
@@ -766,7 +772,7 @@ rows = frappe.get_list(
     limit=20
 )
 
-result = {"data": rows, "format": "table", "chart": None, "files": [], "error": None}
+result = {"data": rows, "layout": "table", "chart": None, "files": [], "error": None}
 ```
 
 ---

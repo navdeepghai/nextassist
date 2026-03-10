@@ -27,7 +27,8 @@ export interface Message {
 
 export interface StructuredResult {
   data: Record<string, any>[];
-  format?: "table" | "list" | "bullets";
+  layout?: "table" | "list" | "bullets";
+  format?: "table" | "list" | "bullets"; // backward compat for stored messages
   chart: ChartConfig | null;
   files: FileResult[];
   error: string | null;

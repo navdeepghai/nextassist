@@ -110,7 +110,7 @@ revenue_data = frappe.db.sql(f'''
     FROM `tabSales Invoice`
     WHERE docstatus = 1 AND YEAR(posting_date) = {last_year}
 ''', as_dict=True)[0]
-result = {"data": [{"label": "Revenue", "value": float(revenue_data.total_revenue or 0)}], "format": "bullets", "chart": None, "files": [], "error": None}"""
+result = {"data": [{"label": "Revenue", "value": float(revenue_data.total_revenue or 0)}], "layout": "bullets", "chart": None, "files": [], "error": None}"""
 		out = _pipeline(code)
 		self.assertNotIn("import", out)
 		self.assertIn("frappe.utils.now_datetime().year", out)
@@ -121,7 +121,7 @@ result = {"data": [{"label": "Revenue", "value": float(revenue_data.total_revenu
 		code = """from datetime import datetime, timedelta
 ten_years_ago = (datetime.now() - timedelta(days=365 * 10)).strftime('%Y-%m-%d')
 rows = frappe.get_list('Sales Invoice', filters={'posting_date': ['>=', ten_years_ago]}, limit=100)
-result = {'data': rows, 'format': 'table', 'chart': None, 'files': [], 'error': None}"""
+result = {'data': rows, 'layout': 'table', 'chart': None, 'files': [], 'error': None}"""
 		out = _pipeline(code)
 		self.assertNotIn("import", out)
 		self.assertIn("frappe.utils.now_datetime()", out)
@@ -129,13 +129,13 @@ result = {'data': rows, 'format': 'table', 'chart': None, 'files': [], 'error': 
 	def test_code_without_datetime_untouched(self):
 		"""Code that doesn't use datetime should pass through unchanged."""
 		code = """rows = frappe.get_list("Sales Invoice", fields=["name", "grand_total"], limit=10)
-result = {"data": rows, "format": "table", "chart": None, "files": [], "error": None}"""
+result = {"data": rows, "layout": "table", "chart": None, "files": [], "error": None}"""
 		self.assertEqual(_sanitize_ai_code(code), code)
 
 	def test_frappe_utils_already_used(self):
 		"""Code already using frappe.utils should not be modified."""
 		code = """today = frappe.utils.today()
-result = {"data": [{"date": today}], "format": "bullets", "chart": None, "files": [], "error": None}"""
+result = {"data": [{"date": today}], "layout": "bullets", "chart": None, "files": [], "error": None}"""
 		self.assertEqual(_sanitize_ai_code(code), code)
 
 
@@ -246,7 +246,7 @@ d["count"] += 1"""
 		"""Code using frappe.utils and no augmented subscripts passes cleanly."""
 		code = """today = frappe.utils.today()
 rows = frappe.get_list("Sales Invoice", limit=10)
-result = {"data": rows, "format": "table", "chart": None, "files": [], "error": None}"""
+result = {"data": rows, "layout": "table", "chart": None, "files": [], "error": None}"""
 		fixed = _pipeline(code)
 		self.assertIn("frappe.utils.today()", fixed)
 		self.assertIn("result =", fixed)
@@ -274,7 +274,7 @@ for r in rows:
 
 result = {
     "data": rows,
-    "format": "table",
+    "layout": "table",
     "chart": {
         "type": "bar",
         "title": "Top Customers",

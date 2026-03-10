@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChat } from "@/hooks/useChat";
 import { useStreamingResponse } from "@/hooks/useStreamingResponse";
@@ -101,6 +101,19 @@ function ActiveChat({
   const [activeToolCall, setActiveToolCall] = useState<string | undefined>();
   const [isContinuing, setIsContinuing] = useState(false);
   const [hasContinued, setHasContinued] = useState(false);
+
+  // Show "Thinking" immediately when streaming starts (don't wait for WebSocket)
+  const prevIsStreaming = useRef(false);
+  useEffect(() => {
+    if (isStreaming && !prevIsStreaming.current) {
+      setIsThinking(true);
+    }
+    if (!isStreaming && prevIsStreaming.current) {
+      setIsThinking(false);
+      setActiveToolCall(undefined);
+    }
+    prevIsStreaming.current = isStreaming;
+  }, [isStreaming]);
 
   useStreamingResponse({
     sessionId,

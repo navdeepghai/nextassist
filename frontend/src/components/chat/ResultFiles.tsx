@@ -74,13 +74,13 @@ export function ResultFiles({ files }: ResultFilesProps) {
           {images.map((file) => (
             <a
               key={file.name}
-              href={file.view_url}
+              href={file.view_url || file.file_url}
               target="_blank"
               rel="noopener noreferrer"
               className="block rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:border-blue-300 transition-colors"
             >
               <img
-                src={file.view_url}
+                src={file.view_url || file.file_url}
                 alt={file.file_name}
                 className="w-full h-32 object-cover"
               />
@@ -98,7 +98,7 @@ export function ResultFiles({ files }: ResultFilesProps) {
           {otherFiles.map((file) => (
             <a
               key={file.name}
-              href={file.view_url}
+              href={file.view_url || file.file_url}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"

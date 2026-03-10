@@ -36,7 +36,7 @@ export function ResultRenderer({ result }: ResultRendererProps) {
     <div className="mt-3 space-y-3">
       {result.error && <ResultError error={result.error} />}
       {result.data && result.data.length > 0 && (
-        <DataRenderer data={result.data} format={result.format} />
+        <DataRenderer data={result.data} format={result.layout || result.format} />
       )}
       {result.chart && <ResultChart config={result.chart} />}
       {result.files && result.files.length > 0 && (
