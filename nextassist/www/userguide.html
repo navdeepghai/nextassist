@@ -2,248 +2,546 @@
 
 {% block page_content %}
 <style>
-	.na-guide { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1a1a2e; line-height: 1.7; }
-	.na-guide-header { text-align: center; margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid #e5e7eb; }
-	.na-guide-header h1 { font-size: 2rem; font-weight: 700; margin: 0 0 0.5rem; }
-	.na-guide-header p { color: #6b7280; font-size: 1rem; margin: 0; }
-	.na-guide-header .na-badge { display: inline-block; margin-top: 1rem; padding: 0.25rem 0.75rem; background: #eff6ff; color: #2563eb; border-radius: 9999px; font-size: 0.8rem; font-weight: 500; }
-	.na-guide-nav { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 2.5rem; }
-	.na-guide-nav h3 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin: 0 0 0.75rem; font-weight: 600; }
-	.na-guide-nav ul { list-style: none; padding: 0; margin: 0; columns: 2; column-gap: 1.5rem; }
-	.na-guide-nav li { break-inside: avoid; margin-bottom: 0.375rem; }
-	.na-guide-nav a { color: #2563eb; text-decoration: none; font-size: 0.875rem; font-weight: 500; }
-	.na-guide-nav a:hover { text-decoration: underline; }
-	.na-section { margin-bottom: 2.5rem; }
-	.na-section h2 { font-size: 1.5rem; font-weight: 700; margin: 0 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e5e7eb; }
-	.na-section h3 { font-size: 1.125rem; font-weight: 600; margin: 1.5rem 0 0.75rem; }
-	.na-section p { margin: 0 0 0.75rem; font-size: 0.9375rem; }
-	.na-section ol, .na-section ul { padding-left: 1.25rem; margin: 0 0 0.75rem; }
-	.na-section li { margin-bottom: 0.375rem; font-size: 0.9375rem; }
-	.na-table { width: 100%; border-collapse: collapse; margin: 0.75rem 0 1.25rem; font-size: 0.875rem; }
-	.na-table th { text-align: left; padding: 0.5rem 0.75rem; background: #f3f4f6; border: 1px solid #e5e7eb; font-weight: 600; }
-	.na-table td { padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; }
-	.na-table code { background: #f3f4f6; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-size: 0.8125rem; }
-	.na-callout { background: #eff6ff; border-left: 3px solid #2563eb; padding: 0.75rem 1rem; border-radius: 0 0.5rem 0.5rem 0; margin: 0.75rem 0 1.25rem; font-size: 0.875rem; }
-	.na-callout strong { color: #1d4ed8; }
-	.na-models { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin: 0.75rem 0 1.25rem; }
-	.na-model-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem; }
-	.na-model-card h4 { font-size: 0.875rem; font-weight: 600; margin: 0 0 0.5rem; }
-	.na-model-card code { display: block; font-size: 0.8rem; color: #4b5563; margin-bottom: 0.125rem; }
-	.na-back { display: inline-flex; align-items: center; gap: 0.375rem; color: #2563eb; text-decoration: none; font-size: 0.875rem; font-weight: 500; margin-bottom: 1rem; }
-	.na-back:hover { text-decoration: underline; }
-	@media (max-width: 640px) { .na-guide-nav ul { columns: 1; } .na-models { grid-template-columns: 1fr; } }
+	/* ── Nuke Frappe chrome ── */
+	.navbar, .web-footer, .footer, .page-header, .page-header-wrapper,
+	[data-page-container] > .page-header, .breadcrumb-container,
+	header .navbar, footer { display: none !important; }
+	.main-section { margin: 0 !important; padding: 0 !important; max-width: none !important; }
+	.container, .page-content, .main-section .container,
+	[data-page-container], .web-content {
+		max-width: none !important; padding-left: 0 !important; padding-right: 0 !important;
+		margin-left: 0 !important; margin-right: 0 !important; width: 100% !important;
+	}
+	body, html { background: #060914 !important; overflow-x: hidden; }
+	.page-content { background: #060914 !important; }
+
+	/* ── Base ── */
+	.ug { --bg: #060914; --bg2: #0a0e1a; --card: rgba(13,18,37,.8); --border: rgba(51,65,85,.35); --border-h: rgba(51,65,85,.65); --amber: #f59e0b; --amber-l: #fcd34d; --blue: #3b82f6; --blue-l: #60a5fa; --emerald: #10b981; --emerald-l: #34d399; --violet: #8b5cf6; --violet-l: #a78bfa; --text: #94a3b8; --text-l: #cbd5e1; --text-w: #e2e8f0; --white: #fff; }
+	.ug { min-height: 100vh; background: var(--bg); color: var(--text-l); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+	*, *::before, *::after { box-sizing: border-box; }
+
+	/* ── Navbar ── */
+	.ug-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; transition: all .4s ease; }
+	.ug-nav.scrolled { background: rgba(6,9,20,.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(245,158,11,.08); box-shadow: 0 4px 30px rgba(0,0,0,.3); }
+	.ug-nav-inner { max-width: 1280px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 64px; }
+	.ug-brand { display: flex; align-items: center; gap: .625rem; text-decoration: none; }
+	.ug-brand:hover { text-decoration: none; }
+	.ug-brand-logo { height: 34px; width: 34px; border-radius: 10px; background: linear-gradient(135deg, #fbbf24, #d97706); display: flex; align-items: center; justify-content: center; color: #0a0e1a; font-weight: 800; font-size: .8rem; letter-spacing: -.04em; box-shadow: 0 0 20px rgba(245,158,11,.25); transition: transform .3s, box-shadow .3s; }
+	.ug-brand:hover .ug-brand-logo { transform: scale(1.08); box-shadow: 0 0 28px rgba(245,158,11,.4); }
+	.ug-brand-name { font-size: 1.15rem; font-weight: 600; color: var(--white); }
+	.ug-brand-name b { color: var(--amber); font-weight: 600; }
+	.ug-links { display: flex; align-items: center; gap: .125rem; }
+	.ug-links a { position: relative; padding: .5rem 1rem; font-size: .85rem; color: var(--text); text-decoration: none; transition: color .2s; font-weight: 450; }
+	.ug-links a:hover { color: var(--white); text-decoration: none; }
+	.ug-links a::after { content: ""; position: absolute; bottom: 0; left: 50%; width: 0; height: 1.5px; background: linear-gradient(90deg, transparent, var(--amber), transparent); transform: translateX(-50%); transition: width .3s; }
+	.ug-links a:hover::after { width: 60%; }
+	.ug-cta-btn { display: inline-flex; align-items: center; gap: .4rem; padding: .45rem 1.15rem; font-size: .85rem; font-weight: 600; border-radius: .5rem; border: none; cursor: pointer; transition: all .3s; text-decoration: none; background: linear-gradient(135deg, #f59e0b, #d97706); color: #0a0e1a; box-shadow: 0 2px 12px rgba(245,158,11,.25); }
+	.ug-cta-btn:hover { background: linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 4px 20px rgba(245,158,11,.45); transform: translateY(-1px); color: #0a0e1a; text-decoration: none; }
+	@media (max-width: 768px) { .ug-links { display: none; } }
+
+	/* ── Hero ── */
+	.ug-hero { position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--bg2); padding: 5rem 1.5rem 4rem; }
+	.ug-hero-orb { position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none; }
+	.ug-hero-orb.a { top: 15%; left: -10%; width: 500px; height: 500px; background: rgba(245,158,11,.07); animation: orb-float 12s ease-in-out infinite; }
+	.ug-hero-orb.b { bottom: 10%; right: -8%; width: 600px; height: 600px; background: rgba(99,102,241,.05); animation: orb-float 15s ease-in-out infinite 3s; }
+	.ug-hero-orb.c { top: 40%; left: 40%; width: 800px; height: 800px; background: rgba(30,58,138,.06); transform: translate(-50%, -50%); }
+	@keyframes orb-float { 0%,100% { transform: translateY(0) scale(1); opacity: 1; } 50% { transform: translateY(-30px) scale(1.05); opacity: .6; } }
+	.ug-hero-grid { position: absolute; inset: 0; opacity: .025; background-image: linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px); background-size: 64px 64px; }
+	.ug-hero-line { position: absolute; top: 0; width: 1px; height: 140%; background: linear-gradient(to bottom, transparent 0%, rgba(245,158,11,.15) 30%, rgba(245,158,11,.15) 70%, transparent 100%); transform-origin: top; }
+	.ug-hero-line.l1 { right: 30%; transform: rotate(20deg) translateY(-10%); }
+	.ug-hero-line.l2 { right: 35%; transform: rotate(20deg) translateY(-10%); opacity: .5; }
+	.ug-hero-content { position: relative; z-index: 2; text-align: center; max-width: 820px; }
+	.ug-badge { display: inline-flex; align-items: center; gap: .5rem; padding: .4rem 1.25rem; border-radius: 9999px; border: 1px solid rgba(245,158,11,.2); background: rgba(245,158,11,.06); margin-bottom: 2rem; }
+	.ug-badge-dot { height: 7px; width: 7px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 8px rgba(245,158,11,.6); animation: pulse-glow 2s ease-in-out infinite; }
+	@keyframes pulse-glow { 0%,100% { box-shadow: 0 0 8px rgba(245,158,11,.6); } 50% { box-shadow: 0 0 16px rgba(245,158,11,.9); } }
+	.ug-badge span { font-size: .7rem; font-weight: 600; color: var(--amber-l); letter-spacing: .14em; text-transform: uppercase; }
+	.ug-hero h1 { font-size: clamp(2.25rem, 5vw, 4rem); font-weight: 800; color: var(--white); letter-spacing: -.03em; line-height: 1.1; margin: 0 0 1rem; }
+	.ug-grad { background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+	.ug-hero .sub { font-size: clamp(1rem, 2vw, 1.2rem); color: rgba(252,211,77,.65); font-weight: 500; letter-spacing: .04em; margin: 0 0 1.5rem; }
+	.ug-hero .desc { font-size: 1rem; color: var(--text); max-width: 580px; margin: 0 auto 2.75rem; line-height: 1.75; }
+	.ug-hero-btns { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem; }
+	.ug-btn-p { display: inline-flex; align-items: center; gap: .5rem; padding: .8rem 2.25rem; font-size: 1rem; font-weight: 600; border-radius: .625rem; border: none; cursor: pointer; transition: all .3s ease; text-decoration: none; background: linear-gradient(135deg, #f59e0b, #d97706); color: #0a0e1a; box-shadow: 0 8px 32px rgba(245,158,11,.25); }
+	.ug-btn-p:hover { background: linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 12px 40px rgba(245,158,11,.4); transform: translateY(-2px); color: #0a0e1a; text-decoration: none; }
+	.ug-btn-o { display: inline-flex; align-items: center; gap: .5rem; padding: .8rem 2.25rem; font-size: 1rem; font-weight: 500; border-radius: .625rem; border: 1px solid rgba(100,116,139,.4); cursor: pointer; transition: all .3s ease; text-decoration: none; background: transparent; color: var(--text-l); }
+	.ug-btn-o:hover { border-color: rgba(100,116,139,.8); color: var(--white); background: rgba(255,255,255,.04); transform: translateY(-2px); text-decoration: none; }
+	.ug-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; max-width: 680px; margin: 4rem auto 0; position: relative; z-index: 2; }
+	.ug-stats::before { content: ""; position: absolute; top: -1.5rem; left: 10%; right: 10%; height: 1px; background: linear-gradient(90deg, transparent, rgba(245,158,11,.15), transparent); }
+	.ug-stat-v { font-size: 1.75rem; font-weight: 800; color: var(--white); text-align: center; letter-spacing: -.02em; }
+	.ug-stat-l { margin-top: .25rem; font-size: .65rem; color: rgba(100,116,139,.9); text-transform: uppercase; letter-spacing: .12em; text-align: center; font-weight: 500; }
+	@media (max-width: 640px) { .ug-stats { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; } }
+	.ug-hero-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 10rem; background: linear-gradient(to top, var(--bg), transparent); z-index: 1; }
+
+	/* ── Sections Container ── */
+	.ug-body { position: relative; padding: 5rem 2rem 3rem; background: var(--bg); }
+	.ug-body-inner { max-width: 980px; margin: 0 auto; }
+
+	/* ── Section Title ── */
+	.ug-sec-title { text-align: center; max-width: 560px; margin: 0 auto 3.5rem; }
+	.ug-sec-title .lbl { font-size: .75rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--amber); margin-bottom: .75rem; }
+	.ug-sec-title h2 { font-size: clamp(1.6rem, 3vw, 2.25rem); font-weight: 800; color: var(--white); letter-spacing: -.02em; margin: 0 0 1rem; }
+	.ug-sec-title p { color: var(--text); font-size: .9375rem; line-height: 1.7; margin: 0; }
+	.ug-divider { display: flex; align-items: center; justify-content: center; gap: .5rem; margin-top: 1.75rem; }
+	.ug-divider i { height: 1px; width: 3rem; }
+	.ug-divider i:first-child { background: linear-gradient(90deg, transparent, rgba(245,158,11,.45)); }
+	.ug-divider i:last-child { background: linear-gradient(90deg, rgba(245,158,11,.45), transparent); }
+	.ug-divider b { height: 7px; width: 7px; border-radius: 50%; background: rgba(245,158,11,.6); display: block; }
+
+	/* ── TOC Grid ── */
+	.ug-toc { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin-bottom: 4.5rem; }
+	.ug-toc a { display: flex; align-items: center; gap: .75rem; padding: 1rem 1.15rem; background: var(--card); border: 1px solid var(--border); border-radius: .75rem; text-decoration: none; color: var(--text-l); font-size: .85rem; font-weight: 500; transition: all .35s ease; }
+	.ug-toc a:hover { border-color: rgba(245,158,11,.25); color: var(--white); transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,.35); text-decoration: none; }
+	.ug-toc-i { display: flex; align-items: center; justify-content: center; height: 2.25rem; width: 2.25rem; border-radius: .625rem; flex-shrink: 0; transition: transform .3s; }
+	.ug-toc a:hover .ug-toc-i { transform: scale(1.1); }
+	.ug-toc-i.am { background: rgba(245,158,11,.1); color: var(--amber); }
+	.ug-toc-i.bl { background: rgba(59,130,246,.1); color: var(--blue-l); }
+	.ug-toc-i.em { background: rgba(16,185,129,.1); color: var(--emerald-l); }
+	.ug-toc-i.vi { background: rgba(139,92,246,.1); color: var(--violet-l); }
+	@media (max-width: 900px) { .ug-toc { grid-template-columns: repeat(2, 1fr); } }
+	@media (max-width: 520px) { .ug-toc { grid-template-columns: 1fr; } }
+
+	/* ── Content Card ── */
+	.ug-card { position: relative; background: var(--card); border: 1px solid var(--border); border-radius: 1.25rem; padding: 2.5rem 3rem; margin-bottom: 1.75rem; transition: all .4s ease; scroll-margin-top: 5rem; overflow: hidden; }
+	.ug-card:hover { border-color: var(--border-h); box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+	.ug-card::before { content: ""; position: absolute; top: 0; left: 3rem; right: 3rem; height: 1px; background: linear-gradient(90deg, transparent, rgba(245,158,11,.25), transparent); opacity: 0; transition: opacity .4s; }
+	.ug-card:hover::before { opacity: 1; }
+	.ug-card-head { display: flex; align-items: center; gap: .875rem; margin-bottom: .375rem; }
+	.ug-card-icon { display: flex; align-items: center; justify-content: center; height: 3rem; width: 3rem; border-radius: .875rem; flex-shrink: 0; transition: transform .3s; }
+	.ug-card:hover .ug-card-icon { transform: scale(1.1); }
+	.ug-card-icon.am { background: rgba(245,158,11,.1); color: var(--amber); }
+	.ug-card-icon.bl { background: rgba(59,130,246,.1); color: var(--blue-l); }
+	.ug-card-icon.em { background: rgba(16,185,129,.1); color: var(--emerald-l); }
+	.ug-card-icon.vi { background: rgba(139,92,246,.1); color: var(--violet-l); }
+	.ug-card-icon svg { width: 1.375rem; height: 1.375rem; }
+	.ug-card-head h2 { font-size: 1.5rem; font-weight: 700; color: var(--white); margin: 0; letter-spacing: -.01em; }
+	.ug-card-desc { color: var(--text); font-size: .9375rem; margin: .25rem 0 1.75rem; padding-left: 3.875rem; }
+	.ug-card h3 { font-size: 1.05rem; font-weight: 600; color: var(--text-w); margin: 2rem 0 .75rem; padding-bottom: .5rem; border-bottom: 1px solid rgba(51,65,85,.2); }
+	.ug-card h3:first-of-type { margin-top: .75rem; }
+	.ug-card p { margin: 0 0 .75rem; font-size: .9375rem; color: var(--text); }
+	.ug-card strong { color: var(--text-w); font-weight: 600; }
+	.ug-card code { background: rgba(245,158,11,.07); color: var(--amber-l); padding: .15rem .5rem; border-radius: .3rem; font-size: .8125rem; font-family: "SF Mono", "Fira Code", monospace; }
+	.ug-card ol, .ug-card ul:not(.ug-fl) { padding-left: 1.25rem; margin: 0 0 .75rem; }
+	.ug-card li { margin-bottom: .4rem; font-size: .9375rem; color: var(--text); }
+	.ug-card li strong { color: var(--text-w); }
+	@media (max-width: 640px) { .ug-card { padding: 1.75rem 1.5rem; } .ug-card-desc { padding-left: 0; } }
+
+	/* ── Feature List ── */
+	.ug-fl { list-style: none; padding: 0; margin: 0 0 .75rem; }
+	.ug-fl li { display: flex; align-items: flex-start; gap: .75rem; margin-bottom: .625rem; font-size: .9375rem; color: var(--text-l); }
+	.ug-fl li::before { content: ""; flex-shrink: 0; margin-top: .55rem; height: 7px; width: 7px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 6px rgba(245,158,11,.3); }
+
+	/* ── Table ── */
+	.ug-tbl { width: 100%; border-collapse: separate; border-spacing: 0; margin: .75rem 0 1.25rem; font-size: .875rem; border-radius: .75rem; overflow: hidden; border: 1px solid var(--border); }
+	.ug-tbl th { text-align: left; padding: .75rem 1.125rem; background: rgba(245,158,11,.05); border-bottom: 1px solid var(--border); font-weight: 600; color: var(--amber); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; }
+	.ug-tbl td { padding: .7rem 1.125rem; border-bottom: 1px solid rgba(51,65,85,.15); color: var(--text); vertical-align: top; }
+	.ug-tbl tr:last-child td { border-bottom: none; }
+	.ug-tbl td strong { color: var(--text-w); }
+	.ug-tbl code { background: rgba(245,158,11,.07); color: var(--amber-l); padding: .1rem .4rem; border-radius: .25rem; font-size: .8rem; }
+
+	/* ── Callout ── */
+	.ug-note { background: rgba(59,130,246,.05); border-left: 3px solid var(--blue); padding: 1rem 1.25rem; border-radius: 0 .625rem .625rem 0; margin: .75rem 0 1.25rem; font-size: .875rem; color: var(--text); }
+	.ug-note strong { color: var(--blue-l); }
+
+	/* ── Model Cards ── */
+	.ug-models { display: grid; grid-template-columns: repeat(3, 1fr); gap: .875rem; margin: .75rem 0 1.25rem; }
+	.ug-model { background: rgba(6,9,20,.5); border: 1px solid var(--border); border-radius: .75rem; padding: 1.25rem 1.375rem; transition: all .35s; }
+	.ug-model:hover { border-color: var(--border-h); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+	.ug-model h4 { font-size: .875rem; font-weight: 700; margin: 0 0 .75rem; color: var(--text-w); letter-spacing: -.01em; }
+	.ug-model code { display: inline-block; font-size: .75rem; color: var(--text); margin: 0 .25rem .3rem 0; background: rgba(245,158,11,.05); padding: .2rem .5rem; border-radius: .3rem; font-family: "SF Mono", "Fira Code", monospace; }
+	@media (max-width: 700px) { .ug-models { grid-template-columns: 1fr; } }
+
+	/* ── CTA ── */
+	.ug-cta { position: relative; padding: 6rem 2rem; background: var(--bg); overflow: hidden; }
+	.ug-cta-orb { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 700px; height: 700px; background: rgba(245,158,11,.035); border-radius: 50%; filter: blur(100px); }
+	.ug-cta-box { position: relative; max-width: 680px; margin: 0 auto; border: 1px solid rgba(51,65,85,.45); background: linear-gradient(170deg, rgba(13,18,37,.95), rgba(10,14,26,.98)); border-radius: 1.25rem; padding: 3.5rem 3rem; text-align: center; box-shadow: 0 24px 64px rgba(0,0,0,.4); overflow: hidden; }
+	.ug-cta-box::before { content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 10rem; height: 1px; background: linear-gradient(90deg, transparent, rgba(245,158,11,.5), transparent); }
+	.ug-cta-box h2 { font-size: 1.75rem; font-weight: 800; color: var(--white); margin: 0 0 1rem; letter-spacing: -.02em; }
+	.ug-cta-box p { color: var(--text); font-size: .9375rem; margin: 0 0 2rem; line-height: 1.75; }
+	.ug-cta-btns { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem; }
+
+	/* ── Footer ── */
+	.ug-foot { background: #050810; border-top: 1px solid rgba(51,65,85,.25); }
+	.ug-foot-inner { max-width: 1280px; margin: 0 auto; padding: 1.75rem 2rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
+	.ug-foot-brand { display: flex; align-items: center; gap: .5rem; }
+	.ug-foot-brand .ico { height: 26px; width: 26px; border-radius: 6px; background: linear-gradient(135deg, #fbbf24, #d97706); display: flex; align-items: center; justify-content: center; color: #0a0e1a; font-weight: 800; font-size: .65rem; }
+	.ug-foot-brand .txt { font-size: .85rem; font-weight: 500; color: #64748b; }
+	.ug-foot-brand .txt b { color: rgba(245,158,11,.7); font-weight: 500; }
+	.ug-foot-copy { font-size: .75rem; color: #475569; }
+
+	/* ── Icons ── */
+	.ic { width: 1.125rem; height: 1.125rem; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; display: inline-block; vertical-align: middle; }
+	.ug-card-icon .ic { width: 1.375rem; height: 1.375rem; }
+	.ug-btn-p .ic, .ug-btn-o .ic, .ug-cta-btn .ic { width: 1.05rem; height: 1.05rem; }
 </style>
 
-<div class="na-guide">
-	<a href="/nextassist" class="na-back">&larr; Back to NextAssist</a>
-
-	<div class="na-guide-header">
-		<h1>NextAssist User Guide</h1>
-		<p>AI Chatbot Assistant for your Frappe site</p>
-		<span class="na-badge">System Manager access required</span>
-	</div>
-
-	<nav class="na-guide-nav">
-		<h3>Contents</h3>
-		<ul>
-			<li><a href="#getting-started">Getting Started</a></li>
-			<li><a href="#providers">Setting Up AI Providers</a></li>
-			<li><a href="#settings">Application Settings</a></li>
-			<li><a href="#chat">Chat</a></li>
-			<li><a href="#sessions">Sessions</a></li>
-			<li><a href="#schedulers">Schedulers</a></li>
-			<li><a href="#provider-usage">Provider Usage</a></li>
-			<li><a href="#tips">Tips</a></li>
-		</ul>
+<div class="ug">
+	<!-- ── Navbar ── -->
+	<nav class="ug-nav" id="ugNav">
+		<div class="ug-nav-inner">
+			<a href="/" class="ug-brand">
+				<div class="ug-brand-logo">NA</div>
+				<div class="ug-brand-name">Next<b>Assist</b></div>
+			</a>
+			<div class="ug-links">
+				<a href="#getting-started">Getting Started</a>
+				<a href="#providers">Providers</a>
+				<a href="#chat">Chat</a>
+				<a href="#schedulers">Schedulers</a>
+			</div>
+			<a href="/" class="ug-cta-btn">
+				<svg class="ic" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+				Home
+			</a>
+		</div>
 	</nav>
 
-	<!-- Getting Started -->
-	<div class="na-section" id="getting-started">
-		<h2>Getting Started</h2>
-		<p>NextAssist is an AI chatbot assistant integrated into your Frappe site. Access it at <strong>/nextassist</strong> from your browser.</p>
-		<div class="na-callout"><strong>Requirement:</strong> You must have the System Manager role to access NextAssist.</div>
-		<p>The main navigation sidebar includes:</p>
-		<ul>
-			<li><strong>Chat</strong> &mdash; Start and continue AI conversations</li>
-			<li><strong>Sessions</strong> &mdash; View and manage chat history</li>
-			<li><strong>Schedulers</strong> &mdash; Set up recurring automated tasks</li>
-			<li><strong>Providers</strong> &mdash; Configure AI provider integrations</li>
-			<li><strong>Settings</strong> &mdash; Application-wide settings</li>
-		</ul>
-	</div>
+	<!-- ── Hero ── -->
+	<section class="ug-hero">
+		<div class="ug-hero-orb a"></div>
+		<div class="ug-hero-orb b"></div>
+		<div class="ug-hero-orb c"></div>
+		<div class="ug-hero-grid"></div>
+		<div class="ug-hero-line l1"></div>
+		<div class="ug-hero-line l2"></div>
 
-	<!-- Providers -->
-	<div class="na-section" id="providers">
-		<h2>Setting Up AI Providers</h2>
-		<p>Before using the chat, configure at least one AI provider.</p>
-
-		<h3>Adding a New Provider</h3>
-		<ol>
-			<li>Navigate to <strong>Providers</strong> from the sidebar</li>
-			<li>Click <strong>New Provider</strong></li>
-			<li>Fill in the required fields:</li>
-		</ol>
-		<table class="na-table">
-			<thead><tr><th>Field</th><th>Description</th></tr></thead>
-			<tbody>
-				<tr><td><strong>Provider Name</strong></td><td>A unique name (e.g., "my-openai")</td></tr>
-				<tr><td><strong>Provider Type</strong></td><td>OpenAI, Anthropic, or Google</td></tr>
-				<tr><td><strong>API Key</strong></td><td>Your provider's API key (stored encrypted)</td></tr>
-				<tr><td>Default Model</td><td>Select from the dropdown for your provider type</td></tr>
-				<tr><td>Max Tokens</td><td>Maximum tokens per response (default: 4096)</td></tr>
-				<tr><td>Temperature</td><td>Response randomness, 0&ndash;2 (default: 0.7)</td></tr>
-				<tr><td>Max Context Messages</td><td>Previous messages included as context (default: 20)</td></tr>
-				<tr><td>API Base URL</td><td>Override the default endpoint (optional)</td></tr>
-				<tr><td>Organization ID</td><td>Required for some OpenAI accounts (optional)</td></tr>
-			</tbody>
-		</table>
-		<p>Toggle <strong>Enabled</strong> to activate, and <strong>Default Provider</strong> to make it the default for new chats. Click <strong>Create</strong> to save.</p>
-
-		<h3>Supported Models</h3>
-		<div class="na-models">
-			<div class="na-model-card">
-				<h4>OpenAI</h4>
-				<code>gpt-5.4-pro</code><code>gpt-5.4</code><code>gpt-4.1</code><code>gpt-4.1-mini</code><code>gpt-4.1-nano</code><code>gpt-4o</code><code>gpt-4o-mini</code><code>o4-mini</code><code>o3</code><code>o3-mini</code>
+		<div class="ug-hero-content">
+			<div class="ug-badge">
+				<div class="ug-badge-dot"></div>
+				<span>User Guide</span>
 			</div>
-			<div class="na-model-card">
-				<h4>Anthropic</h4>
-				<code>claude-opus-4-6</code><code>claude-sonnet-4-6</code><code>claude-haiku-4-5</code><code>claude-opus-4-20250514</code><code>claude-sonnet-4-20250514</code><code>claude-haiku-4-5-20251001</code>
+
+			<h1>NextAssist <span class="ug-grad">User Guide</span></h1>
+			<p class="sub">AI Chatbot Assistant for Your Frappe Site</p>
+			<p class="desc">Configure AI providers, manage chat sessions, automate tasks with schedulers, and unlock the full potential of AI-powered business intelligence.</p>
+
+			<div class="ug-hero-btns">
+				<a href="#getting-started" class="ug-btn-p">
+					Get Started
+					<svg class="ic" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+				</a>
+				<a href="#providers" class="ug-btn-o">
+					<svg class="ic" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+					Explore Features
+				</a>
 			</div>
-			<div class="na-model-card">
-				<h4>Google</h4>
-				<code>gemini-3.1-pro-preview</code><code>gemini-3.1-flash-lite-preview</code><code>gemini-3-flash-preview</code><code>gemini-2.5-pro</code><code>gemini-2.5-flash</code><code>gemini-2.5-flash-lite</code><code>gemini-2.0-flash</code><code>gemini-2.0-flash-lite</code>
+
+			<div class="ug-stats">
+				<div><div class="ug-stat-v">3</div><div class="ug-stat-l">AI Providers</div></div>
+				<div><div class="ug-stat-v">20+</div><div class="ug-stat-l">AI Models</div></div>
+				<div><div class="ug-stat-v">4</div><div class="ug-stat-l">Action Types</div></div>
+				<div><div class="ug-stat-v">24/7</div><div class="ug-stat-l">AI Assistant</div></div>
 			</div>
 		</div>
 
-		<h3>Managing Providers</h3>
-		<ul>
-			<li><strong>Edit</strong> &mdash; Click a provider from the list to update settings</li>
-			<li><strong>View/Copy API Key</strong> &mdash; Use the eye icon to reveal the key, copy icon to copy</li>
-			<li><strong>Delete</strong> &mdash; Click Delete on the provider detail page</li>
-		</ul>
+		<div class="ug-hero-fade"></div>
+	</section>
+
+	<!-- ── Body ── -->
+	<div class="ug-body">
+		<div class="ug-body-inner">
+
+			<div class="ug-sec-title">
+				<div class="lbl">Documentation</div>
+				<h2>Everything You Need to Know</h2>
+				<p>From initial setup to advanced automation &mdash; a complete guide to getting the most out of NextAssist.</p>
+				<div class="ug-divider"><i></i><b></b><i></i></div>
+			</div>
+
+			<!-- TOC -->
+			<div class="ug-toc">
+				<a href="#getting-started"><div class="ug-toc-i am"><svg class="ic" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>Getting Started</a>
+				<a href="#providers"><div class="ug-toc-i bl"><svg class="ic" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg></div>Providers</a>
+				<a href="#settings"><div class="ug-toc-i em"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.18V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0-.33-2.82H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 2.82-.33V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1.08 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0 .33 2.82H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1.08z"/></svg></div>Settings</a>
+				<a href="#chat"><div class="ug-toc-i vi"><svg class="ic" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>Chat</a>
+				<a href="#sessions"><div class="ug-toc-i am"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>Sessions</a>
+				<a href="#schedulers"><div class="ug-toc-i bl"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>Schedulers</a>
+				<a href="#provider-usage"><div class="ug-toc-i em"><svg class="ic" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></div>Usage</a>
+				<a href="#tips"><div class="ug-toc-i vi"><svg class="ic" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 12 18.469a3.374 3.374 0 0 0-.964-1.86z"/></svg></div>Tips</a>
+			</div>
+
+			<!-- ─── Getting Started ─── -->
+			<div class="ug-card" id="getting-started">
+				<div class="ug-card-head">
+					<div class="ug-card-icon am"><svg class="ic" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+					<h2>Getting Started</h2>
+				</div>
+				<p class="ug-card-desc">Get up and running with NextAssist in minutes.</p>
+
+				<p>NextAssist is an AI chatbot assistant integrated into your Frappe site. Access it at <strong>/nextassist</strong> from your browser.</p>
+				<div class="ug-note"><strong>Requirement:</strong> You must have the System Manager role to access NextAssist.</div>
+				<p>The main navigation sidebar includes:</p>
+				<ul class="ug-fl">
+					<li><strong>Chat</strong> &mdash; Start and continue AI conversations</li>
+					<li><strong>Sessions</strong> &mdash; View and manage chat history</li>
+					<li><strong>Schedulers</strong> &mdash; Set up recurring automated tasks</li>
+					<li><strong>Providers</strong> &mdash; Configure AI provider integrations</li>
+					<li><strong>Settings</strong> &mdash; Application-wide settings</li>
+				</ul>
+			</div>
+
+			<!-- ─── Providers ─── -->
+			<div class="ug-card" id="providers">
+				<div class="ug-card-head">
+					<div class="ug-card-icon bl"><svg class="ic" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg></div>
+					<h2>Setting Up AI Providers</h2>
+				</div>
+				<p class="ug-card-desc">Configure AI providers to power your conversations.</p>
+
+				<p>Before using the chat, configure at least one AI provider.</p>
+
+				<h3>Adding a New Provider</h3>
+				<ol>
+					<li>Navigate to <strong>Providers</strong> from the sidebar</li>
+					<li>Click <strong>New Provider</strong></li>
+					<li>Fill in the required fields:</li>
+				</ol>
+				<table class="ug-tbl">
+					<thead><tr><th>Field</th><th>Description</th></tr></thead>
+					<tbody>
+						<tr><td><strong>Provider Name</strong></td><td>A unique name (e.g., "my-openai")</td></tr>
+						<tr><td><strong>Provider Type</strong></td><td>OpenAI, Anthropic, or Google</td></tr>
+						<tr><td><strong>API Key</strong></td><td>Your provider's API key (stored encrypted)</td></tr>
+						<tr><td>Default Model</td><td>Select from the dropdown for your provider type</td></tr>
+						<tr><td>Max Tokens</td><td>Maximum tokens per response (default: 4096)</td></tr>
+						<tr><td>Temperature</td><td>Response randomness, 0&ndash;2 (default: 0.7)</td></tr>
+						<tr><td>Max Context Messages</td><td>Previous messages included as context (default: 20)</td></tr>
+						<tr><td>API Base URL</td><td>Override the default endpoint (optional)</td></tr>
+						<tr><td>Organization ID</td><td>Required for some OpenAI accounts (optional)</td></tr>
+					</tbody>
+				</table>
+				<p>Toggle <strong>Enabled</strong> to activate, and <strong>Default Provider</strong> to make it the default for new chats. Click <strong>Create</strong> to save.</p>
+
+				<h3>Supported Models</h3>
+				<div class="ug-models">
+					<div class="ug-model">
+						<h4>OpenAI</h4>
+						<code>gpt-5.4-pro</code> <code>gpt-5.4</code> <code>gpt-4.1</code> <code>gpt-4.1-mini</code> <code>gpt-4.1-nano</code> <code>gpt-4o</code> <code>gpt-4o-mini</code> <code>o4-mini</code> <code>o3</code> <code>o3-mini</code>
+					</div>
+					<div class="ug-model">
+						<h4>Anthropic</h4>
+						<code>claude-opus-4-6</code> <code>claude-sonnet-4-6</code> <code>claude-haiku-4-5</code> <code>claude-opus-4-20250514</code> <code>claude-sonnet-4-20250514</code> <code>claude-haiku-4-5-20251001</code>
+					</div>
+					<div class="ug-model">
+						<h4>Google</h4>
+						<code>gemini-3.1-pro-preview</code> <code>gemini-3.1-flash-lite-preview</code> <code>gemini-3-flash-preview</code> <code>gemini-2.5-pro</code> <code>gemini-2.5-flash</code> <code>gemini-2.5-flash-lite</code> <code>gemini-2.0-flash</code> <code>gemini-2.0-flash-lite</code>
+					</div>
+				</div>
+
+				<h3>Managing Providers</h3>
+				<ul class="ug-fl">
+					<li><strong>Edit</strong> &mdash; Click a provider from the list to update settings</li>
+					<li><strong>View/Copy API Key</strong> &mdash; Use the eye icon to reveal the key, copy icon to copy</li>
+					<li><strong>Delete</strong> &mdash; Click Delete on the provider detail page</li>
+				</ul>
+			</div>
+
+			<!-- ─── Settings ─── -->
+			<div class="ug-card" id="settings">
+				<div class="ug-card-head">
+					<div class="ug-card-icon em"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.18V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0-.33-2.82H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 2.82-.33V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1.08 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0 .33 2.82H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1.08z"/></svg></div>
+					<h2>Application Settings</h2>
+				</div>
+				<p class="ug-card-desc">Configure app-wide options for NextAssist.</p>
+
+				<p>Navigate to <strong>Settings</strong> to configure app-wide options:</p>
+				<table class="ug-tbl">
+					<thead><tr><th>Setting</th><th>Description</th></tr></thead>
+					<tbody>
+						<tr><td><strong>Default Provider</strong></td><td>Which AI provider to use for new chats</td></tr>
+						<tr><td><strong>Enable Tool Calling</strong></td><td>Allow the AI to query data, create records, etc.</td></tr>
+						<tr><td><strong>Enable File Uploads</strong></td><td>Allow file attachments in chat messages</td></tr>
+					</tbody>
+				</table>
+			</div>
+
+			<!-- ─── Chat ─── -->
+			<div class="ug-card" id="chat">
+				<div class="ug-card-head">
+					<div class="ug-card-icon vi"><svg class="ic" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+					<h2>Chat</h2>
+				</div>
+				<p class="ug-card-desc">Start AI-powered conversations with your business data.</p>
+
+				<h3>Starting a Conversation</h3>
+				<ol>
+					<li>Navigate to <strong>Chat</strong> from the sidebar</li>
+					<li>Click <strong>New Chat</strong></li>
+					<li>Type your message and press <strong>Enter</strong> to send</li>
+				</ol>
+				<p>Use <strong>Shift+Enter</strong> for a new line without sending.</p>
+
+				<h3>Switching Models</h3>
+				<p>Click the <strong>model badge</strong> above the input to open the model switcher. Models are grouped by provider type. You can change models mid-conversation.</p>
+
+				<h3>AI Responses</h3>
+				<p>Responses stream in real-time and can include:</p>
+				<ul class="ug-fl">
+					<li><strong>Text</strong> &mdash; Formatted markdown (headings, bold, links, code blocks)</li>
+					<li><strong>Tables</strong> &mdash; Scrollable data tables with formatted columns</li>
+					<li><strong>Charts</strong> &mdash; Bar, line, pie, and percentage charts</li>
+					<li><strong>Lists &amp; Bullets</strong> &mdash; Structured data summaries</li>
+					<li><strong>Files</strong> &mdash; Images as thumbnails, other files as download links</li>
+					<li><strong>Code</strong> &mdash; Toggle visibility with the "Show code" button</li>
+				</ul>
+
+				<h3>File Uploads</h3>
+				<p>When enabled in Settings, attach files (PDFs, images, text) to your messages. The AI reads and analyzes the file content.</p>
+
+				<h3>Token Limits</h3>
+				<div class="ug-note"><strong>80% usage</strong> &mdash; Warning banner appears. <strong>100%</strong> &mdash; Session marked "Limit Reached", start a new chat.</div>
+			</div>
+
+			<!-- ─── Sessions ─── -->
+			<div class="ug-card" id="sessions">
+				<div class="ug-card-head">
+					<div class="ug-card-icon am"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
+					<h2>Sessions</h2>
+				</div>
+				<p class="ug-card-desc">View and manage your chat history.</p>
+
+				<p>Navigate to <strong>Sessions</strong> to view all chat sessions.</p>
+
+				<h3>Session List</h3>
+				<p>Shows title, user, status (Active/Limit Reached/Archived), provider, model, token count, and last message time. Use search and status filters to find sessions.</p>
+
+				<h3>View Chat (Preview)</h3>
+				<p>Click <strong>View Chat</strong> to open a full-screen preview that renders the conversation exactly as it appeared &mdash; including charts, tables, formatted text, and errors. The preview has three columns:</p>
+				<ul class="ug-fl">
+					<li><strong>Left</strong> &mdash; Session details and statistics</li>
+					<li><strong>Center</strong> &mdash; Chat messages with full rendering</li>
+					<li><strong>Right</strong> &mdash; Message timeline with timestamps</li>
+				</ul>
+
+				<h3>Actions</h3>
+				<ul class="ug-fl">
+					<li><strong>View Chat</strong> &mdash; Preview the conversation in a modal</li>
+					<li><strong>Open in Chat</strong> &mdash; Continue the conversation</li>
+					<li><strong>Delete</strong> &mdash; Remove the session and all messages</li>
+				</ul>
+			</div>
+
+			<!-- ─── Schedulers ─── -->
+			<div class="ug-card" id="schedulers">
+				<div class="ug-card-head">
+					<div class="ug-card-icon bl"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+					<h2>Schedulers</h2>
+				</div>
+				<p class="ug-card-desc">Automate recurring tasks with cron-based scheduling.</p>
+
+				<p>Create recurring automated tasks that run on a cron schedule.</p>
+
+				<h3>Creating a Scheduler</h3>
+				<ol>
+					<li>Navigate to <strong>Schedulers</strong> and click <strong>New Scheduler</strong></li>
+					<li>Set the title and cron expression (e.g., <code>0 9 * * *</code> for daily at 9 AM)</li>
+					<li>Configure the query: DocType, filters, fields, and optional condition</li>
+					<li>Choose an action type and configure it</li>
+				</ol>
+
+				<h3>Action Types</h3>
+				<table class="ug-tbl">
+					<thead><tr><th>Type</th><th>Description</th></tr></thead>
+					<tbody>
+						<tr><td><strong>Email</strong></td><td>Send an email with matched data</td></tr>
+						<tr><td><strong>Notification</strong></td><td>Create a Frappe notification</td></tr>
+						<tr><td><strong>Webhook</strong></td><td>POST data to an external URL</td></tr>
+						<tr><td><strong>Custom Code</strong></td><td>Execute custom Python code</td></tr>
+					</tbody>
+				</table>
+
+				<h3>Monitoring</h3>
+				<p>Each scheduler shows run history with status (success/error/skipped), duration, matched and actioned counts. Error details are preserved for debugging.</p>
+			</div>
+
+			<!-- ─── Provider Usage ─── -->
+			<div class="ug-card" id="provider-usage">
+				<div class="ug-card-head">
+					<div class="ug-card-icon em"><svg class="ic" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></div>
+					<h2>Provider Usage</h2>
+				</div>
+				<p class="ug-card-desc">Monitor AI provider usage and performance metrics.</p>
+
+				<p>Each provider's detail page shows a <strong>Usage Stats</strong> sidebar:</p>
+				<ul class="ug-fl">
+					<li><strong>Tokens Burned</strong> &mdash; Total tokens used across all sessions</li>
+					<li><strong>Active Sessions</strong> &mdash; Currently active sessions</li>
+					<li><strong>Total Sessions</strong> &mdash; All sessions that used this provider</li>
+					<li><strong>Last Used</strong> &mdash; When the provider was last used</li>
+				</ul>
+				<p>The <strong>Recent Sessions</strong> list shows the latest sessions with status indicators, user info, and token counts. Click a session title to open it in chat.</p>
+			</div>
+
+			<!-- ─── Tips ─── -->
+			<div class="ug-card" id="tips">
+				<div class="ug-card-head">
+					<div class="ug-card-icon vi"><svg class="ic" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 12 18.469a3.374 3.374 0 0 0-.964-1.86z"/></svg></div>
+					<h2>Tips</h2>
+				</div>
+				<p class="ug-card-desc">Best practices for getting the most out of NextAssist.</p>
+
+				<ul class="ug-fl">
+					<li><strong>Dark Mode</strong> &mdash; Toggle Light/Dark/System theme from the sidebar</li>
+					<li><strong>Keyboard</strong> &mdash; Enter to send, Shift+Enter for new line</li>
+					<li><strong>Context Window</strong> &mdash; Start a new chat when you hit the token limit for best results</li>
+					<li><strong>Multiple Providers</strong> &mdash; Configure several providers and switch between them via Settings or the model switcher</li>
+				</ul>
+			</div>
+
+		</div>
 	</div>
 
-	<!-- Settings -->
-	<div class="na-section" id="settings">
-		<h2>Application Settings</h2>
-		<p>Navigate to <strong>Settings</strong> to configure app-wide options:</p>
-		<table class="na-table">
-			<thead><tr><th>Setting</th><th>Description</th></tr></thead>
-			<tbody>
-				<tr><td><strong>Default Provider</strong></td><td>Which AI provider to use for new chats</td></tr>
-				<tr><td><strong>Enable Tool Calling</strong></td><td>Allow the AI to query data, create records, etc.</td></tr>
-				<tr><td><strong>Enable File Uploads</strong></td><td>Allow file attachments in chat messages</td></tr>
-			</tbody>
-		</table>
-	</div>
+	<!-- ── CTA ── -->
+	<section class="ug-cta">
+		<div class="ug-cta-orb"></div>
+		<div class="ug-cta-box">
+			<h2>Need More <span class="ug-grad">Help?</span></h2>
+			<p>Explore the documentation above or head back to the homepage to learn more about the full Empire Solutions platform.</p>
+			<div class="ug-cta-btns">
+				<a href="#getting-started" class="ug-btn-p">
+					Back to Top
+					<svg class="ic" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+				</a>
+				<a href="/" class="ug-btn-o">
+					<svg class="ic" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+					Visit Homepage
+				</a>
+			</div>
+		</div>
+	</section>
 
-	<!-- Chat -->
-	<div class="na-section" id="chat">
-		<h2>Chat</h2>
-
-		<h3>Starting a Conversation</h3>
-		<ol>
-			<li>Navigate to <strong>Chat</strong> from the sidebar</li>
-			<li>Click <strong>New Chat</strong></li>
-			<li>Type your message and press <strong>Enter</strong> to send</li>
-		</ol>
-		<p>Use <strong>Shift+Enter</strong> for a new line without sending.</p>
-
-		<h3>Switching Models</h3>
-		<p>Click the <strong>model badge</strong> above the input to open the model switcher. Models are grouped by provider type. You can change models mid-conversation.</p>
-
-		<h3>AI Responses</h3>
-		<p>Responses stream in real-time and can include:</p>
-		<ul>
-			<li><strong>Text</strong> &mdash; Formatted markdown (headings, bold, links, code blocks)</li>
-			<li><strong>Tables</strong> &mdash; Scrollable data tables with formatted columns</li>
-			<li><strong>Charts</strong> &mdash; Bar, line, pie, and percentage charts</li>
-			<li><strong>Lists &amp; Bullets</strong> &mdash; Structured data summaries</li>
-			<li><strong>Files</strong> &mdash; Images as thumbnails, other files as download links</li>
-			<li><strong>Code</strong> &mdash; Toggle visibility with the "Show code" button</li>
-		</ul>
-
-		<h3>File Uploads</h3>
-		<p>When enabled in Settings, attach files (PDFs, images, text) to your messages. The AI reads and analyzes the file content.</p>
-
-		<h3>Token Limits</h3>
-		<div class="na-callout"><strong>80% usage</strong> &mdash; Warning banner appears. <strong>100%</strong> &mdash; Session marked "Limit Reached", start a new chat.</div>
-	</div>
-
-	<!-- Sessions -->
-	<div class="na-section" id="sessions">
-		<h2>Sessions</h2>
-		<p>Navigate to <strong>Sessions</strong> to view all chat sessions.</p>
-
-		<h3>Session List</h3>
-		<p>Shows title, user, status (Active/Limit Reached/Archived), provider, model, token count, and last message time. Use search and status filters to find sessions.</p>
-
-		<h3>View Chat (Preview)</h3>
-		<p>Click <strong>View Chat</strong> to open a full-screen preview that renders the conversation exactly as it appeared &mdash; including charts, tables, formatted text, and errors. The preview has three columns:</p>
-		<ul>
-			<li><strong>Left</strong> &mdash; Session details and statistics</li>
-			<li><strong>Center</strong> &mdash; Chat messages with full rendering</li>
-			<li><strong>Right</strong> &mdash; Message timeline with timestamps</li>
-		</ul>
-
-		<h3>Actions</h3>
-		<ul>
-			<li><strong>View Chat</strong> &mdash; Preview the conversation in a modal</li>
-			<li><strong>Open in Chat</strong> &mdash; Continue the conversation</li>
-			<li><strong>Delete</strong> &mdash; Remove the session and all messages</li>
-		</ul>
-	</div>
-
-	<!-- Schedulers -->
-	<div class="na-section" id="schedulers">
-		<h2>Schedulers</h2>
-		<p>Create recurring automated tasks that run on a cron schedule.</p>
-
-		<h3>Creating a Scheduler</h3>
-		<ol>
-			<li>Navigate to <strong>Schedulers</strong> and click <strong>New Scheduler</strong></li>
-			<li>Set the title and cron expression (e.g., <code>0 9 * * *</code> for daily at 9 AM)</li>
-			<li>Configure the query: DocType, filters, fields, and optional condition</li>
-			<li>Choose an action type and configure it</li>
-		</ol>
-
-		<h3>Action Types</h3>
-		<table class="na-table">
-			<thead><tr><th>Type</th><th>Description</th></tr></thead>
-			<tbody>
-				<tr><td><strong>Email</strong></td><td>Send an email with matched data</td></tr>
-				<tr><td><strong>Notification</strong></td><td>Create a Frappe notification</td></tr>
-				<tr><td><strong>Webhook</strong></td><td>POST data to an external URL</td></tr>
-				<tr><td><strong>Custom Code</strong></td><td>Execute custom Python code</td></tr>
-			</tbody>
-		</table>
-
-		<h3>Monitoring</h3>
-		<p>Each scheduler shows run history with status (success/error/skipped), duration, matched and actioned counts. Error details are preserved for debugging.</p>
-	</div>
-
-	<!-- Provider Usage -->
-	<div class="na-section" id="provider-usage">
-		<h2>Provider Usage</h2>
-		<p>Each provider's detail page shows a <strong>Usage Stats</strong> sidebar:</p>
-		<ul>
-			<li><strong>Tokens Burned</strong> &mdash; Total tokens used across all sessions</li>
-			<li><strong>Active Sessions</strong> &mdash; Currently active sessions</li>
-			<li><strong>Total Sessions</strong> &mdash; All sessions that used this provider</li>
-			<li><strong>Last Used</strong> &mdash; When the provider was last used</li>
-		</ul>
-		<p>The <strong>Recent Sessions</strong> list shows the latest sessions with status indicators, user info, and token counts. Click a session title to open it in chat.</p>
-	</div>
-
-	<!-- Tips -->
-	<div class="na-section" id="tips">
-		<h2>Tips</h2>
-		<ul>
-			<li><strong>Dark Mode</strong> &mdash; Toggle Light/Dark/System theme from the sidebar</li>
-			<li><strong>Keyboard</strong> &mdash; Enter to send, Shift+Enter for new line</li>
-			<li><strong>Context Window</strong> &mdash; Start a new chat when you hit the token limit for best results</li>
-			<li><strong>Multiple Providers</strong> &mdash; Configure several providers and switch between them via Settings or the model switcher</li>
-		</ul>
-	</div>
+	<!-- ── Footer ── -->
+	<footer class="ug-foot">
+		<div class="ug-foot-inner">
+			<div class="ug-foot-brand">
+				<div class="ico">NA</div>
+				<div class="txt">Next<b>Assist</b></div>
+			</div>
+			<p class="ug-foot-copy">&copy; 2025 NextAssist. All rights reserved.</p>
+		</div>
+	</footer>
 </div>
+
+<script>
+(function() {
+	// Navbar scroll effect
+	var nav = document.getElementById('ugNav');
+	var ticking = false;
+	window.addEventListener('scroll', function() {
+		if (!ticking) {
+			requestAnimationFrame(function() {
+				nav.classList.toggle('scrolled', window.scrollY > 30);
+				ticking = false;
+			});
+			ticking = true;
+		}
+	}, { passive: true });
+
+	// Smooth scroll
+	document.querySelectorAll('.ug a[href^="#"]').forEach(function(a) {
+		a.addEventListener('click', function(e) {
+			var t = document.querySelector(this.getAttribute('href'));
+			if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+		});
+	});
+})();
+</script>
 {% endblock %}
