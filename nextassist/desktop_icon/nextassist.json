@@ -1,0 +1,21 @@
+{
+ "app": "nextassist",
+ "bg_color": "gray",
+ "creation": "2026-03-08 23:07:10.059954",
+ "docstatus": 0,
+ "doctype": "Desktop Icon",
+ "hidden": 0,
+ "icon_type": "App",
+ "idx": 0,
+ "label": "NextAssist",
+ "link": "/nextassist",
+ "link_type": "External",
+ "logo_url": "/assets/nextassist/icons/nextassist-logo.svg",
+ "modified": "2026-03-12 11:39:49.660682",
+ "modified_by": "Administrator",
+ "name": "NextAssist",
+ "owner": "Administrator",
+ "restrict_removal": 0,
+ "roles": [],
+ "standard": 1
+}
