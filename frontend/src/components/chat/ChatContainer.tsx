@@ -34,23 +34,23 @@ function EmptyState() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white dark:bg-gray-900">
+    <div className="flex-1 flex flex-col h-full bg-[var(--na-card)] dark:bg-[var(--na-card)]">
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center max-w-md">
-          <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-200 dark:shadow-blue-900">
+          <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-[#007AFF] to-[#0071E3] flex items-center justify-center shadow-lg shadow-[#007AFF]/20 dark:shadow-none">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
+          <h2 className="text-2xl font-semibold text-[var(--na-text)] mb-2">
             NextAssist
           </h2>
-          <p className="text-gray-400 dark:text-gray-500 text-sm mb-8 leading-relaxed">
+          <p className="text-[#86868B] text-sm mb-8 leading-relaxed">
             Start a conversation to get help with your data, analyze documents, or ask questions.
           </p>
           <button
             onClick={handleNewChat}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm font-medium rounded-xl hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#007AFF] dark:bg-[#0A84FF] text-white text-sm font-medium rounded-xl hover:bg-[#0071E3] dark:hover:bg-[#409CFF] transition-colors shadow-sm"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 5v14" />
@@ -179,7 +179,7 @@ function ActiveChat({
   }, [sessionId, continueSession, refreshSessions, navigate]);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white dark:bg-gray-900">
+    <div className="flex-1 flex flex-col h-full bg-[var(--na-card)] dark:bg-[var(--na-card)]">
       <ChatHeader
         sessionId={sessionId}
         model={currentSession?.model}
@@ -233,7 +233,7 @@ function ActiveChat({
           <button
             onClick={handleContinue}
             disabled={isContinuing}
-            className="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#007AFF] dark:bg-[#0A84FF] text-white text-sm font-medium rounded-lg hover:bg-[#0071E3] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isContinuing ? (
               <>

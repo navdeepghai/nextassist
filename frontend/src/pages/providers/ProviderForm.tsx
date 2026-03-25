@@ -63,7 +63,7 @@ interface ProviderData {
 }
 
 const INPUT_CLASS =
-  "w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 dark:text-gray-100";
+  "w-full px-3 py-2.5 text-[15px] border border-black/10 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 dark:focus:ring-[#0A84FF]/30 focus:border-[#007AFF] dark:focus:border-[#0A84FF] bg-[var(--na-input-bg)] text-[var(--na-text)]";
 
 export function ProviderForm() {
   const { provider_name } = useParams<{ provider_name: string }>();
@@ -248,7 +248,7 @@ export function ProviderForm() {
                 onChange={(e) => updateField("provider_name", e.target.value)}
                 disabled={!isNew}
                 placeholder="e.g. my-openai-provider"
-                className={`${INPUT_CLASS} ${!isNew ? "bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed" : ""}`}
+                className={`${INPUT_CLASS} ${!isNew ? "bg-[var(--na-input-bg)] text-[#AEAEB2] cursor-not-allowed" : ""}`}
               />
             </FormField>
             <FormField label="Provider Type" required>
@@ -282,8 +282,8 @@ export function ProviderForm() {
                   role="switch"
                   aria-checked={form.enabled}
                   onClick={() => updateField("enabled", !form.enabled)}
-                  className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
-                    form.enabled ? "bg-blue-600" : "bg-gray-200 dark:bg-gray-700"
+                  className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 focus:ring-offset-1 ${
+                    form.enabled ? "bg-[#007AFF] dark:bg-[#0A84FF]" : "bg-[#E5E5EA] dark:bg-[#39393D]"
                   }`}
                 >
                   <span
@@ -304,8 +304,8 @@ export function ProviderForm() {
                   role="switch"
                   aria-checked={form.is_default}
                   onClick={() => updateField("is_default", !form.is_default)}
-                  className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
-                    form.is_default ? "bg-blue-600" : "bg-gray-200 dark:bg-gray-700"
+                  className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 focus:ring-offset-1 ${
+                    form.is_default ? "bg-[#007AFF] dark:bg-[#0A84FF]" : "bg-[#E5E5EA] dark:bg-[#39393D]"
                   }`}
                 >
                   <span

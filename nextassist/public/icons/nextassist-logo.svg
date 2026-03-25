@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="128" y2="128" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#3B82F6"/>
-      <stop offset="100%" stop-color="#1D4ED8"/>
+      <stop offset="0%" stop-color="#007AFF"/>
+      <stop offset="100%" stop-color="#0071E3"/>
     </linearGradient>
     <linearGradient id="spark" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#FBBF24"/>
@@ -17,9 +17,9 @@
   <path d="M34 40 C34 34.477 38.477 30 44 30 L84 30 C89.523 30 94 34.477 94 40 L94 68 C94 73.523 89.523 78 84 78 L58 78 L44 90 L44 78 C38.477 78 34 73.523 34 68 Z" fill="white" fill-opacity="0.95"/>
 
   <!-- Three dots in bubble -->
-  <circle cx="52" cy="54" r="4" fill="#3B82F6" fill-opacity="0.4"/>
-  <circle cx="64" cy="54" r="4" fill="#3B82F6" fill-opacity="0.6"/>
-  <circle cx="76" cy="54" r="4" fill="#3B82F6" fill-opacity="0.8"/>
+  <circle cx="52" cy="54" r="4" fill="#007AFF" fill-opacity="0.4"/>
+  <circle cx="64" cy="54" r="4" fill="#007AFF" fill-opacity="0.6"/>
+  <circle cx="76" cy="54" r="4" fill="#007AFF" fill-opacity="0.8"/>
 
   <!-- AI sparkle (4-point star) top-right -->
   <path d="M90 22 L93 30 L101 33 L93 36 L90 44 L87 36 L79 33 L87 30 Z" fill="url(#spark)"/>

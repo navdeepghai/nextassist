@@ -28,9 +28,9 @@ function relativeTime(dateStr?: string): string {
 }
 
 const statusColors: Record<string, string> = {
-  Active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  "Limit Reached": "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-  Archived: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+  Active: "bg-[#34C759]/10 text-[#34C759] dark:bg-[#30D158]/12 dark:text-[#30D158]",
+  "Limit Reached": "bg-[#FF9500]/10 text-[#FF9500] dark:bg-[#FF9F0A]/12 dark:text-[#FF9F0A]",
+  Archived: "bg-[#86868B]/10 text-[#86868B]",
 };
 
 export function SessionList() {
@@ -64,7 +64,7 @@ export function SessionList() {
       key: "title",
       label: "Title",
       render: (row) => (
-        <span className="font-semibold text-gray-900 dark:text-gray-100">{row.title || "Untitled"}</span>
+        <span className="font-medium text-[var(--na-text)]">{row.title || "Untitled"}</span>
       ),
     },
     {

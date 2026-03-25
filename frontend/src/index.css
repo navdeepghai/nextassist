@@ -2,12 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Apple HIG-inspired theme ────────────────────────────────────────────── */
+
+:root {
+  --na-bg: #F5F5F7;
+  --na-card: #FFFFFF;
+  --na-card-hover: #F5F5F7;
+  --na-border: rgba(0,0,0,0.06);
+  --na-text: #1D1D1F;
+  --na-text-muted: #AEAEB2;
+  --na-text-sec: #86868B;
+  --na-sidebar: rgba(255,255,255,0.8);
+  --na-accent: #007AFF;
+  --na-accent-hover: #0071E3;
+  --na-accent-light: rgba(0,122,255,0.08);
+  --na-success: #34C759;
+  --na-success-light: rgba(52,199,89,0.08);
+  --na-destructive: #FF3B30;
+  --na-input-bg: #F5F5F7;
+}
+
+.dark {
+  --na-bg: #000000;
+  --na-card: #1C1C1E;
+  --na-card-hover: #2C2C2E;
+  --na-border: rgba(255,255,255,0.08);
+  --na-text: #F5F5F7;
+  --na-text-muted: #636366;
+  --na-text-sec: #86868B;
+  --na-sidebar: rgba(28,28,30,0.8);
+  --na-accent: #0A84FF;
+  --na-accent-hover: #409CFF;
+  --na-accent-light: rgba(10,132,255,0.12);
+  --na-success: #30D158;
+  --na-success-light: rgba(48,209,88,0.12);
+  --na-destructive: #FF453A;
+  --na-input-bg: #2C2C2E;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--na-bg);
+  color: var(--na-text);
 }
 
 /* Scrollbar styling */
@@ -18,45 +57,45 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: rgba(0,0,0,0.15);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: rgba(0,0,0,0.25);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: rgba(255,255,255,0.15);
 }
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: rgba(255,255,255,0.25);
 }
 
 /* Markdown code blocks */
 .markdown-content pre {
-  background: #1e1e1e;
+  background: #1C1C1E;
   color: #d4d4d4;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 16px;
   overflow-x: auto;
   margin: 8px 0;
 }
 
 .markdown-content code {
-  font-family: "Fira Code", "Cascadia Code", Menlo, monospace;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", Menlo, monospace;
   font-size: 0.875rem;
 }
 
 .markdown-content p code {
-  background: #f3f4f6;
+  background: #F5F5F7;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 0.85em;
 }
 
 .dark .markdown-content p code {
-  background: #374151;
-  color: #e5e7eb;
+  background: #2C2C2E;
+  color: #F5F5F7;
 }
 
 .markdown-content table {
@@ -67,72 +106,72 @@ body {
 
 .markdown-content th,
 .markdown-content td {
-  border: 1px solid #e5e7eb;
-  padding: 8px 12px;
+  border: 1px solid rgba(0,0,0,0.06);
+  padding: 10px 14px;
   text-align: left;
 }
 
 .markdown-content th {
-  background: #f9fafb;
+  background: #F5F5F7;
   font-weight: 600;
 }
 
 .dark .markdown-content th,
 .dark .markdown-content td {
-  border-color: #374151;
-  color: #e5e7eb;
+  border-color: rgba(255,255,255,0.08);
+  color: #F5F5F7;
 }
 
 .dark .markdown-content th {
-  background: #1f2937;
+  background: #2C2C2E;
 }
 
 /* Dark mode for frappe-charts */
 .dark .chart-container .title,
 .dark .chart-container .subtitle {
-  fill: #e5e7eb;
+  fill: #F5F5F7;
 }
 
 .dark .chart-container .axis text,
 .dark .chart-container .chart-label {
-  fill: #9ca3af;
+  fill: #86868B;
 }
 
 .dark .chart-container .axis line,
 .dark .chart-container .axis path {
-  stroke: #374151;
+  stroke: rgba(255,255,255,0.08);
 }
 
 /* Dark mode prose overrides */
 .dark .prose {
-  color: #e5e7eb;
+  color: #F5F5F7;
 }
 
 .dark .prose strong {
-  color: #f3f4f6;
+  color: #F5F5F7;
 }
 
 .dark .prose h1,
 .dark .prose h2,
 .dark .prose h3,
 .dark .prose h4 {
-  color: #f3f4f6;
+  color: #F5F5F7;
 }
 
 .dark .prose a {
-  color: #60a5fa;
+  color: #0A84FF;
 }
 
 .dark .prose blockquote {
-  color: #9ca3af;
-  border-left-color: #4b5563;
+  color: #86868B;
+  border-left-color: rgba(255,255,255,0.08);
 }
 
 .dark .prose hr {
-  border-color: #374151;
+  border-color: rgba(255,255,255,0.08);
 }
 
 .dark .prose ol > li::marker,
 .dark .prose ul > li::marker {
-  color: #6b7280;
+  color: #636366;
 }

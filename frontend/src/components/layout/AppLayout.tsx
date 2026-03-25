@@ -8,7 +8,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, fullWidth }: AppLayoutProps) {
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="flex h-screen bg-[var(--na-bg)]">
       <AppSidebar />
       <div className={`flex-1 min-w-0 ${fullWidth ? "" : "overflow-y-auto"}`}>
         {children}

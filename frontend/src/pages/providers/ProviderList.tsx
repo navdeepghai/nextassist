@@ -14,9 +14,9 @@ interface Provider {
 }
 
 const PROVIDER_TYPE_COLORS: Record<string, { bg: string; text: string }> = {
-  OpenAI: { bg: "bg-blue-50 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-400" },
-  Anthropic: { bg: "bg-orange-50 dark:bg-orange-900/30", text: "text-orange-700 dark:text-orange-400" },
-  Google: { bg: "bg-green-50 dark:bg-green-900/30", text: "text-green-700 dark:text-green-400" },
+  OpenAI: { bg: "bg-[#007AFF]/10 dark:bg-[#0A84FF]/12", text: "text-[#007AFF] dark:text-[#0A84FF]" },
+  Anthropic: { bg: "bg-[#FF9500]/10 dark:bg-[#FF9F0A]/12", text: "text-[#FF9500] dark:text-[#FF9F0A]" },
+  Google: { bg: "bg-[#34C759]/10 dark:bg-[#30D158]/12", text: "text-[#34C759] dark:text-[#30D158]" },
 };
 
 const columns: Column<Provider>[] = [
@@ -25,7 +25,7 @@ const columns: Column<Provider>[] = [
     label: "Provider Name",
     sortable: true,
     render: (row) => (
-      <span className="font-semibold text-gray-900 dark:text-gray-100">{row.provider_name}</span>
+      <span className="font-medium text-[var(--na-text)]">{row.provider_name}</span>
     ),
   },
   {

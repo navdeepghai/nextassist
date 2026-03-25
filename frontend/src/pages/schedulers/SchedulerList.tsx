@@ -44,17 +44,17 @@ function relativeTime(dateStr?: string): string {
 }
 
 const statusColors: Record<string, string> = {
-  Active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  Paused: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-  Error: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-  Completed: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+  Active: "bg-[#34C759]/10 text-[#34C759] dark:bg-[#30D158]/12 dark:text-[#30D158]",
+  Paused: "bg-[#FF9500]/10 text-[#FF9500] dark:bg-[#FF9F0A]/12 dark:text-[#FF9F0A]",
+  Error: "bg-[#FF3B30]/10 text-[#FF3B30] dark:bg-[#FF453A]/12 dark:text-[#FF453A]",
+  Completed: "bg-[#86868B]/10 text-[#86868B]",
 };
 
 const actionTypeColors: Record<string, string> = {
-  email: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  notification: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  webhook: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-  custom_code: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400",
+  email: "bg-[#007AFF]/10 text-[#007AFF] dark:bg-[#0A84FF]/12 dark:text-[#0A84FF]",
+  notification: "bg-[#AF52DE]/10 text-[#AF52DE] dark:bg-[#BF5AF2]/12 dark:text-[#BF5AF2]",
+  webhook: "bg-[#FF9500]/10 text-[#FF9500] dark:bg-[#FF9F0A]/12 dark:text-[#FF9F0A]",
+  custom_code: "bg-[#86868B]/10 text-[#86868B]",
 };
 
 export function SchedulerList() {
@@ -97,11 +97,11 @@ export function SchedulerList() {
       label: "Title",
       render: (row) => (
         <div>
-          <span className="font-semibold text-gray-900 dark:text-gray-100">
+          <span className="font-medium text-[var(--na-text)]">
             {row.title}
           </span>
           {row.description && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate max-w-xs">
+            <p className="text-[13px] text-[#86868B] mt-0.5 truncate max-w-xs">
               {row.description}
             </p>
           )}

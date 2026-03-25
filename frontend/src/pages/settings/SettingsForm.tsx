@@ -22,10 +22,10 @@ interface Provider {
 }
 
 const inputClass =
-  "w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 dark:text-gray-100";
+  "w-full px-3 py-2.5 text-[15px] border border-black/10 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 dark:focus:ring-[#0A84FF]/30 focus:border-[#007AFF] dark:focus:border-[#0A84FF] bg-[var(--na-input-bg)] text-[var(--na-text)]";
 
 const readOnlyClass =
-  "w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed";
+  "w-full px-3 py-2.5 text-[15px] border border-black/10 dark:border-white/10 rounded-xl bg-[var(--na-input-bg)] text-[#AEAEB2] cursor-not-allowed";
 
 export function SettingsForm() {
   const [form, setForm] = useState<SettingsData>({
@@ -101,20 +101,20 @@ export function SettingsForm() {
     <AppLayout>
       <div className="h-screen flex flex-col">
         {/* Sticky Header */}
-        <div className="sticky top-0 z-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
+        <div className="sticky top-0 z-20 bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-xl border-b border-black/5 dark:border-white/5">
           <div className="max-w-6xl mx-auto pl-14 md:pl-6 pr-6 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="text-gray-400 dark:text-gray-500">
-                <Settings className="w-5 h-5" />
+              <div className="text-[#86868B]">
+                <Settings className="w-5 h-5" strokeWidth={1.5} />
               </div>
-              <h1 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+              <h1 className="text-lg font-semibold tracking-tight text-[var(--na-text)]">
                 Settings
               </h1>
             </div>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-1.5 px-4 py-1.5 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-300 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-1.5 px-5 py-2 bg-[#007AFF] dark:bg-[#0A84FF] text-white text-[15px] font-medium rounded-xl hover:bg-[#0071E3] dark:hover:bg-[#409CFF] disabled:opacity-50 transition-colors duration-200 ease-out"
             >
               {saving ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -216,7 +216,7 @@ export function SettingsForm() {
                     }))
                   }
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    form.enable_tool_calling ? "bg-blue-600" : "bg-gray-200 dark:bg-gray-700"
+                    form.enable_tool_calling ? "bg-[#007AFF] dark:bg-[#0A84FF]" : "bg-[#E5E5EA] dark:bg-[#39393D]"
                   }`}
                 >
                   <span
@@ -241,7 +241,7 @@ export function SettingsForm() {
                     }))
                   }
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    form.enable_file_uploads ? "bg-blue-600" : "bg-gray-200 dark:bg-gray-700"
+                    form.enable_file_uploads ? "bg-[#007AFF] dark:bg-[#0A84FF]" : "bg-[#E5E5EA] dark:bg-[#39393D]"
                   }`}
                 >
                   <span

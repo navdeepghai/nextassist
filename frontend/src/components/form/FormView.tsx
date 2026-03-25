@@ -41,30 +41,30 @@ export function FormView({
   return (
     <div className="h-screen flex flex-col">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
+      <div className="sticky top-0 z-20 bg-white/80 dark:bg-[#1C1C1E]/80 backdrop-blur-xl border-b border-black/5 dark:border-white/5">
         <div className="max-w-6xl mx-auto pl-14 md:pl-6 pr-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(backPath)}
-              className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              className="flex items-center gap-1 text-[15px] text-[#86868B] hover:text-[var(--na-text)] transition-colors duration-200 ease-out"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4" strokeWidth={1.5} />
               {backLabel || "Back"}
             </button>
-            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700" />
-            {icon && <div className="text-gray-400 dark:text-gray-500">{icon}</div>}
+            <div className="w-px h-5 bg-black/10 dark:bg-white/10" />
+            {icon && <div className="text-[#86868B]">{icon}</div>}
             <div>
-              <h1 className="text-base font-semibold text-gray-900 dark:text-gray-100">{title}</h1>
-              {subtitle && <p className="text-xs text-gray-500 dark:text-gray-400">{subtitle}</p>}
+              <h1 className="text-lg font-semibold tracking-tight text-[var(--na-text)]">{title}</h1>
+              {subtitle && <p className="text-[13px] text-[#86868B]">{subtitle}</p>}
             </div>
           </div>
           <div className="flex items-center gap-2">
             {onDelete && !isNew && (
               <button
                 onClick={onDelete}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2 text-[15px] text-[#FF3B30] dark:text-[#FF453A] bg-[#FF3B30]/10 dark:bg-[#FF453A]/10 hover:bg-[#FF3B30]/20 dark:hover:bg-[#FF453A]/20 rounded-xl transition-colors duration-200 ease-out"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-4 h-4" strokeWidth={1.5} />
                 Delete
               </button>
             )}
@@ -72,12 +72,12 @@ export function FormView({
               <button
                 onClick={onSave}
                 disabled={saving}
-                className="flex items-center gap-1.5 px-4 py-1.5 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-300 disabled:opacity-50 transition-colors"
+                className="flex items-center gap-1.5 px-5 py-2 bg-[#007AFF] dark:bg-[#0A84FF] text-white text-[15px] font-medium rounded-xl hover:bg-[#0071E3] dark:hover:bg-[#409CFF] disabled:opacity-50 transition-colors duration-200 ease-out"
               >
                 {saving ? (
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <Save className="w-4 h-4" />
+                  <Save className="w-4 h-4" strokeWidth={1.5} />
                 )}
                 {isNew ? "Create" : "Save"}
               </button>
@@ -118,11 +118,11 @@ export function FormSection({
   collapsible?: boolean;
 }) {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+    <div className="bg-[var(--na-card)] rounded-2xl border border-black/[0.04] dark:border-white/[0.06] shadow-sm dark:shadow-none overflow-hidden">
       {title && (
-        <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800">
-          <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">{title}</h3>
-          {description && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{description}</p>}
+        <div className="px-5 py-3.5 border-b border-black/[0.04] dark:border-white/[0.05]">
+          <h3 className="text-[15px] font-medium text-[var(--na-text)]">{title}</h3>
+          {description && <p className="text-[13px] text-[#86868B] mt-0.5">{description}</p>}
         </div>
       )}
       <div className="px-5 py-4 space-y-4">{children}</div>
@@ -146,13 +146,13 @@ export function FormField({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+      <label className="block text-[13px] font-medium text-[#86868B] mb-1.5">
         {label}
-        {required && <span className="text-red-500 dark:text-red-400 ml-0.5">*</span>}
+        {required && <span className="text-[#FF3B30] dark:text-[#FF453A] ml-0.5">*</span>}
       </label>
       {children}
-      {description && <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{description}</p>}
-      {error && <p className="text-xs text-red-500 dark:text-red-400 mt-1">{error}</p>}
+      {description && <p className="text-[13px] text-[#AEAEB2] mt-1">{description}</p>}
+      {error && <p className="text-[13px] text-[#FF3B30] dark:text-[#FF453A] mt-1">{error}</p>}
     </div>
   );
 }
@@ -176,35 +176,35 @@ function FormTimeline({ meta }: { meta: { created_at?: string; modified_at?: str
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
-        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Activity</h3>
+    <div className="bg-[var(--na-card)] rounded-2xl border border-black/[0.04] dark:border-white/[0.06] shadow-sm dark:shadow-none overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-black/[0.04] dark:border-white/[0.05]">
+        <h3 className="text-[15px] font-medium text-[var(--na-text)]">Activity</h3>
       </div>
-      <div className="px-4 py-3 space-y-3">
+      <div className="px-5 py-4 space-y-3">
         {meta.modified_at && (
           <div className="flex items-start gap-2.5">
-            <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500 mt-0.5 shrink-0" />
+            <Clock className="w-4 h-4 text-[#AEAEB2] mt-0.5 shrink-0" strokeWidth={1.5} />
             <div>
-              <p className="text-xs font-medium text-gray-700 dark:text-gray-300">Last Modified</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(meta.modified_at)}</p>
+              <p className="text-[13px] font-medium text-[var(--na-text)]">Last Modified</p>
+              <p className="text-[13px] text-[#86868B]">{formatDate(meta.modified_at)}</p>
             </div>
           </div>
         )}
         {meta.created_at && (
           <div className="flex items-start gap-2.5">
-            <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500 mt-0.5 shrink-0" />
+            <Clock className="w-4 h-4 text-[#AEAEB2] mt-0.5 shrink-0" strokeWidth={1.5} />
             <div>
-              <p className="text-xs font-medium text-gray-700 dark:text-gray-300">Created</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(meta.created_at)}</p>
+              <p className="text-[13px] font-medium text-[var(--na-text)]">Created</p>
+              <p className="text-[13px] text-[#86868B]">{formatDate(meta.created_at)}</p>
             </div>
           </div>
         )}
         {meta.created_by && (
           <div className="flex items-start gap-2.5">
-            <User className="w-4 h-4 text-gray-400 dark:text-gray-500 mt-0.5 shrink-0" />
+            <User className="w-4 h-4 text-[#AEAEB2] mt-0.5 shrink-0" strokeWidth={1.5} />
             <div>
-              <p className="text-xs font-medium text-gray-700 dark:text-gray-300">Created By</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{meta.created_by}</p>
+              <p className="text-[13px] font-medium text-[var(--na-text)]">Created By</p>
+              <p className="text-[13px] text-[#86868B]">{meta.created_by}</p>
             </div>
           </div>
         )}
