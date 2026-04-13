@@ -387,7 +387,7 @@ def _transform_ai_code(code: str) -> str:
 			if isinstance(node.func, ast.Attribute) and node.func.attr == "strftime":
 				new_node = ast.Call(
 					func=ast.Name(id="_safe_strftime", ctx=ast.Load()),
-					args=[node.func.value] + node.args,
+					args=[node.func.value, *node.args],
 					keywords=node.keywords,
 				)
 				return ast.copy_location(new_node, node)

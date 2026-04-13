@@ -148,7 +148,7 @@ def check_claude_code_status():
 
 	# 1. Check if claude-code-sdk is importable
 	try:
-		import claude_code_sdk  # noqa: F401
+		import claude_code_sdk
 	except ImportError:
 		result["error"] = (
 			"The claude-code-sdk Python package is not installed. "
