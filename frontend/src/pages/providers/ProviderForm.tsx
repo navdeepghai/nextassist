@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useFrappeGetCall, useFrappePostCall } from "frappe-react-sdk";
 import { toast } from "sonner";
-import { Bot, Eye, EyeOff, Copy, Check, ChevronDown } from "lucide-react";
+import { Bot, Eye, EyeOff, Copy, Check, ChevronDown, AlertCircle, Loader2 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProviderUsageSidebar } from "./ProviderUsageSidebar";
 import {
@@ -43,6 +43,18 @@ const PROVIDER_MODELS: Record<string, string[]> = {
     "gemini-2.0-flash",
     "gemini-2.0-flash-lite",
   ],
+  "Claude Code": [
+    "claude-sonnet-4-6",
+    "claude-opus-4-6",
+  ],
+};
+
+const CONTEXT_WINDOW_OPTIONS: Record<string, { value: number; label: string }[]> = {
+  "claude-sonnet-4-6": [{ value: 200000, label: "200K" }],
+  "claude-opus-4-6": [
+    { value: 200000, label: "200K" },
+    { value: 1000000, label: "1M" },
+  ],
 };
 
 interface ProviderData {
@@ -54,12 +66,19 @@ interface ProviderData {
   api_base_url: string;
   organization_id: string;
   default_model: string;
+  context_window: number | null;
   max_tokens: number;
   temperature: number;
   max_context_messages: number;
   creation?: string;
   modified?: string;
   owner?: string;
+}
+
+interface ClaudeCodeStatus {
+  installed: boolean;
+  authenticated: boolean;
+  error: string | null;
 }
 
 const INPUT_CLASS =
@@ -79,6 +98,7 @@ export function ProviderForm() {
     api_base_url: "",
     organization_id: "",
     default_model: "",
+    context_window: null,
     max_tokens: 4096,
     temperature: 0.7,
     max_context_messages: 20,
@@ -86,6 +106,8 @@ export function ProviderForm() {
   const [saving, setSaving] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [claudeStatus, setClaudeStatus] = useState<ClaudeCodeStatus | null>(null);
+  const [checkingClaude, setCheckingClaude] = useState(false);
 
   const { data, isLoading } = useFrappeGetCall<{ message: ProviderData }>(
     "nextassist.api.provider.get_provider",
@@ -101,6 +123,10 @@ export function ProviderForm() {
     "nextassist.api.provider.delete_provider"
   );
 
+  const { call: checkClaudeCode } = useFrappePostCall(
+    "nextassist.api.provider.check_claude_code_status"
+  );
+
   // Populate form when data loads
   useEffect(() => {
     if (data?.message && !isNew) {
@@ -114,6 +140,7 @@ export function ProviderForm() {
         api_base_url: d.api_base_url || "",
         organization_id: d.organization_id || "",
         default_model: d.default_model || "",
+        context_window: d.context_window ?? null,
         max_tokens: d.max_tokens ?? 4096,
         temperature: d.temperature ?? 0.7,
         max_context_messages: d.max_context_messages ?? 20,
@@ -124,10 +151,44 @@ export function ProviderForm() {
     }
   }, [data, isNew]);
 
+  // Check Claude Code status when provider type changes to "Claude Code"
+  useEffect(() => {
+    if (form.provider_type !== "Claude Code") {
+      setClaudeStatus(null);
+      return;
+    }
+
+    let cancelled = false;
+    setCheckingClaude(true);
+    setClaudeStatus(null);
+
+    checkClaudeCode({})
+      .then((res: { message?: ClaudeCodeStatus }) => {
+        if (!cancelled) setClaudeStatus(res.message ?? (res as unknown as ClaudeCodeStatus));
+      })
+      .catch(() => {
+        if (!cancelled) setClaudeStatus({ installed: false, authenticated: false, error: "Failed to check Claude Code status." });
+      })
+      .finally(() => {
+        if (!cancelled) setCheckingClaude(false);
+      });
+
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.provider_type]);
+
   const availableModels = useMemo(
     () => PROVIDER_MODELS[form.provider_type] || [],
     [form.provider_type]
   );
+
+  const contextWindowOptions = useMemo(() => {
+    if (form.provider_type !== "Claude Code" || !form.default_model) return [];
+    return CONTEXT_WINDOW_OPTIONS[form.default_model] || [];
+  }, [form.provider_type, form.default_model]);
+
+  const isClaudeCode = form.provider_type === "Claude Code";
+  const claudeCheckFailed = isClaudeCode && claudeStatus !== null && (!claudeStatus.installed || !claudeStatus.authenticated);
 
   const updateField = <K extends keyof ProviderData>(
     key: K,
@@ -145,7 +206,7 @@ export function ProviderForm() {
       toast.error("Provider type is required.");
       return;
     }
-    if (isNew && !form.api_key.trim()) {
+    if (isNew && !isClaudeCode && !form.api_key.trim()) {
       toast.error("API key is required for new providers.");
       return;
     }
@@ -160,6 +221,7 @@ export function ProviderForm() {
         api_base_url: form.api_base_url,
         organization_id: form.organization_id,
         default_model: form.default_model,
+        context_window: form.context_window,
         max_tokens: form.max_tokens,
         temperature: form.temperature,
         max_context_messages: form.max_context_messages,
@@ -223,6 +285,7 @@ export function ProviderForm() {
         onSave={handleSave}
         onDelete={isNew ? undefined : handleDelete}
         saving={saving}
+        saveDisabled={checkingClaude || claudeCheckFailed}
         sidebar={
           !isNew && provider_name ? (
             <ProviderUsageSidebar providerName={provider_name} />
@@ -257,20 +320,55 @@ export function ProviderForm() {
                   value={form.provider_type}
                   onChange={(e) => {
                     updateField("provider_type", e.target.value);
-                    // Reset default_model when provider type changes
+                    // Reset default_model and context_window when provider type changes
                     updateField("default_model", "");
+                    updateField("context_window", null);
                   }}
                   className={`${INPUT_CLASS} appearance-none pr-8`}
                 >
                   <option value="OpenAI">OpenAI</option>
                   <option value="Anthropic">Anthropic</option>
                   <option value="Google">Google</option>
+                  <option value="Claude Code">Claude Code</option>
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               </div>
             </FormField>
           </FormRow>
         </FormSection>
+
+        {/* Claude Code Status Banner */}
+        {isClaudeCode && (
+          <div className={`rounded-xl px-4 py-3 flex items-start gap-3 text-[15px] ${
+            checkingClaude
+              ? "bg-[#007AFF]/5 dark:bg-[#0A84FF]/8 text-[#007AFF] dark:text-[#0A84FF]"
+              : claudeCheckFailed
+                ? "bg-[#FF3B30]/8 dark:bg-[#FF453A]/10 text-[#FF3B30] dark:text-[#FF453A]"
+                : claudeStatus?.installed && claudeStatus?.authenticated
+                  ? "bg-[#34C759]/8 dark:bg-[#30D158]/10 text-[#34C759] dark:text-[#30D158]"
+                  : ""
+          }`}>
+            {checkingClaude ? (
+              <>
+                <Loader2 className="w-5 h-5 mt-0.5 flex-shrink-0 animate-spin" />
+                <span>Checking Claude Code CLI status...</span>
+              </>
+            ) : claudeCheckFailed ? (
+              <>
+                <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-medium">Claude Code is not configured correctly</p>
+                  <p className="text-[13px] mt-1 opacity-80">{claudeStatus?.error}</p>
+                </div>
+              </>
+            ) : claudeStatus?.installed && claudeStatus?.authenticated ? (
+              <>
+                <Check className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <span>Claude Code CLI is installed and authenticated.</span>
+              </>
+            ) : null}
+          </div>
+        )}
 
         {/* Status Section */}
         <FormSection title="Status">
@@ -322,78 +420,80 @@ export function ProviderForm() {
           </FormRow>
         </FormSection>
 
-        {/* Credentials Section */}
-        <FormSection title="Credentials">
-          <FormField
-            label="API Key"
-            required={isNew}
-            description={
-              isNew
-                ? "Your provider API key. This will be stored securely."
-                : "Leave blank to keep existing key unchanged."
-            }
-          >
-            <div className="relative flex items-center">
-              <input
-                type={showApiKey ? "text" : "password"}
-                value={form.api_key}
-                onChange={(e) => updateField("api_key", e.target.value)}
-                placeholder={isNew ? "sk-..." : "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"}
-                className={`${INPUT_CLASS} pr-20`}
-              />
-              <div className="absolute right-1.5 flex items-center gap-0.5">
-                <button
-                  type="button"
-                  onClick={() => setShowApiKey((prev) => !prev)}
-                  className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  title={showApiKey ? "Hide API key" : "Show API key"}
-                >
-                  {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-                {form.api_key && (
+        {/* Credentials Section — hidden for Claude Code (uses CLI auth) */}
+        {!isClaudeCode && (
+          <FormSection title="Credentials">
+            <FormField
+              label="API Key"
+              required={isNew}
+              description={
+                isNew
+                  ? "Your provider API key. This will be stored securely."
+                  : "Leave blank to keep existing key unchanged."
+              }
+            >
+              <div className="relative flex items-center">
+                <input
+                  type={showApiKey ? "text" : "password"}
+                  value={form.api_key}
+                  onChange={(e) => updateField("api_key", e.target.value)}
+                  placeholder={isNew ? "sk-..." : "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"}
+                  className={`${INPUT_CLASS} pr-20`}
+                />
+                <div className="absolute right-1.5 flex items-center gap-0.5">
                   <button
                     type="button"
-                    onClick={() => {
-                      navigator.clipboard.writeText(form.api_key);
-                      setCopied(true);
-                      setTimeout(() => setCopied(false), 2000);
-                    }}
+                    onClick={() => setShowApiKey((prev) => !prev)}
                     className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    title="Copy API key"
+                    title={showApiKey ? "Hide API key" : "Show API key"}
                   >
-                    {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                    {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
-                )}
+                  {form.api_key && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(form.api_key);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                      className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      title="Copy API key"
+                    >
+                      {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          </FormField>
-          <FormRow>
-            <FormField
-              label="API Base URL"
-              description="Override the default API endpoint (optional)."
-            >
-              <input
-                type="text"
-                value={form.api_base_url}
-                onChange={(e) => updateField("api_base_url", e.target.value)}
-                placeholder="https://api.openai.com/v1"
-                className={INPUT_CLASS}
-              />
             </FormField>
-            <FormField
-              label="Organization ID"
-              description="Required for some OpenAI accounts."
-            >
-              <input
-                type="text"
-                value={form.organization_id}
-                onChange={(e) => updateField("organization_id", e.target.value)}
-                placeholder="org-..."
-                className={INPUT_CLASS}
-              />
-            </FormField>
-          </FormRow>
-        </FormSection>
+            <FormRow>
+              <FormField
+                label="API Base URL"
+                description="Override the default API endpoint (optional)."
+              >
+                <input
+                  type="text"
+                  value={form.api_base_url}
+                  onChange={(e) => updateField("api_base_url", e.target.value)}
+                  placeholder="https://api.openai.com/v1"
+                  className={INPUT_CLASS}
+                />
+              </FormField>
+              <FormField
+                label="Organization ID"
+                description="Required for some OpenAI accounts."
+              >
+                <input
+                  type="text"
+                  value={form.organization_id}
+                  onChange={(e) => updateField("organization_id", e.target.value)}
+                  placeholder="org-..."
+                  className={INPUT_CLASS}
+                />
+              </FormField>
+            </FormRow>
+          </FormSection>
+        )}
 
         {/* Model Configuration Section */}
         <FormSection title="Model Configuration">
@@ -401,7 +501,14 @@ export function ProviderForm() {
             <div className="relative">
               <select
                 value={form.default_model}
-                onChange={(e) => updateField("default_model", e.target.value)}
+                onChange={(e) => {
+                  updateField("default_model", e.target.value);
+                  // Reset context window when model changes
+                  if (isClaudeCode) {
+                    const opts = CONTEXT_WINDOW_OPTIONS[e.target.value] || [];
+                    updateField("context_window", opts.length > 0 ? opts[0].value : null);
+                  }
+                }}
                 className={`${INPUT_CLASS} appearance-none pr-8`}
               >
                 <option value="">Select a model...</option>
@@ -414,6 +521,30 @@ export function ProviderForm() {
               <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             </div>
           </FormField>
+          {/* Context Window — only for Claude Code */}
+          {isClaudeCode && contextWindowOptions.length > 0 && (
+            <FormField
+              label="Context Window"
+              description="Maximum context size for the selected model."
+            >
+              <div className="relative">
+                <select
+                  value={form.context_window ?? ""}
+                  onChange={(e) =>
+                    updateField("context_window", parseInt(e.target.value, 10) || null)
+                  }
+                  className={`${INPUT_CLASS} appearance-none pr-8`}
+                >
+                  {contextWindowOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              </div>
+            </FormField>
+          )}
           <FormRow>
             <FormField label="Max Tokens">
               <input

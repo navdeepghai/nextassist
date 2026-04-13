@@ -5,6 +5,7 @@ DEFAULT_BASE_URLS = {
 	"OpenAI": "https://api.openai.com/v1",
 	"Anthropic": "https://api.anthropic.com",
 	"Google": "https://generativelanguage.googleapis.com/v1beta",
+	"Claude Code": None,
 }
 
 
@@ -27,6 +28,7 @@ class ProviderConfig:
 		self.max_tokens = row.get("max_tokens", 4096)
 		self.temperature = row.get("temperature", 0.7)
 		self.max_context_messages = row.get("max_context_messages", 20)
+		self.context_window = row.get("context_window")
 		self._api_key = row.get("api_key", "")  # already decrypted
 
 	def get_password(self, field: str) -> str:
@@ -73,7 +75,8 @@ def get_all_enabled_providers() -> list[dict]:
 		cur.execute(
 			"""
 			SELECT provider_name, provider_type, enabled, is_default,
-			       default_model, max_tokens, temperature, max_context_messages
+			       default_model, context_window, max_tokens, temperature,
+			       max_context_messages
 			FROM na_ai_provider
 			WHERE enabled = TRUE
 			"""
@@ -115,9 +118,9 @@ def save_provider(data: dict) -> dict:
 			"""
 			INSERT INTO na_ai_provider
 				(provider_name, provider_type, enabled, is_default, api_key_encrypted,
-				 api_base_url, organization_id, default_model, max_tokens,
-				 temperature, max_context_messages)
-			VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+				 api_base_url, organization_id, default_model, context_window,
+				 max_tokens, temperature, max_context_messages)
+			VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 			ON CONFLICT (provider_name) DO UPDATE SET
 				provider_type = EXCLUDED.provider_type,
 				enabled = EXCLUDED.enabled,
@@ -126,6 +129,7 @@ def save_provider(data: dict) -> dict:
 				api_base_url = EXCLUDED.api_base_url,
 				organization_id = EXCLUDED.organization_id,
 				default_model = EXCLUDED.default_model,
+				context_window = EXCLUDED.context_window,
 				max_tokens = EXCLUDED.max_tokens,
 				temperature = EXCLUDED.temperature,
 				max_context_messages = EXCLUDED.max_context_messages,
@@ -141,6 +145,7 @@ def save_provider(data: dict) -> dict:
 				api_base_url,
 				data.get("organization_id"),
 				data.get("default_model"),
+				data.get("context_window"),
 				data.get("max_tokens", 4096),
 				data.get("temperature", 0.7),
 				data.get("max_context_messages", 20),

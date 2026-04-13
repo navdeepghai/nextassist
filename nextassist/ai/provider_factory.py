@@ -7,6 +7,7 @@ PROVIDER_MAP = {
 	"OpenAI": "nextassist.ai.openai_provider.OpenAIProvider",
 	"Anthropic": "nextassist.ai.anthropic_provider.AnthropicProvider",
 	"Google": "nextassist.ai.gemini_provider.GeminiProvider",
+	"Claude Code": "nextassist.ai.claude_code_provider.ClaudeCodeProvider",
 }
 
 

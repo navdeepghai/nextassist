@@ -110,6 +110,7 @@ def get_provider_config(session_name: str) -> dict:
 		"max_tokens": (provider_config.max_tokens if provider_config else 0) or 4096,
 		"max_context_messages": (provider_config.max_context_messages if provider_config else 0) or 20,
 		"system_prompt": _get_default_system_prompt(),
+		"context_window": getattr(provider_config, "context_window", None),
 	}
 
 

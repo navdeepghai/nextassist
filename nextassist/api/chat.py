@@ -4,7 +4,7 @@ import frappe
 
 from nextassist.ai.file_processor import extract_file_content
 from nextassist.ai.streaming import stream_ai_response
-from nextassist.database import message_db, session_db
+from nextassist.database import message_db, provider_db, session_db
 
 # Token limits per model family (input context window)
 MODEL_TOKEN_LIMITS = {
@@ -50,7 +50,14 @@ def send_message(session_id, message, attachments=None):
 	total_tokens = message_db.sum_tokens(session_id)
 
 	model = session.get("model") or ""
-	token_limit = _get_token_limit_for_model(model)
+
+	# Use provider's context_window if set (e.g. Claude Code 1M), else prefix-based lookup
+	provider_config = provider_db.get_provider(session.get("provider")) if session.get("provider") else None
+	if provider_config and provider_config.context_window:
+		token_limit = provider_config.context_window
+	else:
+		token_limit = _get_token_limit_for_model(model)
+
 	warning_threshold = int(token_limit * TOKEN_WARNING_RATIO)
 
 	# Block if session is already at limit or marked as Limit Reached

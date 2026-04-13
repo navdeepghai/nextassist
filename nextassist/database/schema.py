@@ -35,13 +35,14 @@ CREATE TABLE IF NOT EXISTS na_message (
 -- AI Providers
 CREATE TABLE IF NOT EXISTS na_ai_provider (
     provider_name        VARCHAR(255) PRIMARY KEY,
-    provider_type        VARCHAR(50) NOT NULL CHECK (provider_type IN ('OpenAI', 'Anthropic', 'Google')),
+    provider_type        VARCHAR(50) NOT NULL CHECK (provider_type IN ('OpenAI', 'Anthropic', 'Google', 'Claude Code')),
     enabled              BOOLEAN NOT NULL DEFAULT TRUE,
     is_default           BOOLEAN NOT NULL DEFAULT FALSE,
     api_key_encrypted    TEXT NOT NULL,
     api_base_url         VARCHAR(500),
     organization_id      VARCHAR(255),
     default_model        VARCHAR(255),
+    context_window       INTEGER,
     max_tokens           INTEGER NOT NULL DEFAULT 4096,
     temperature          REAL NOT NULL DEFAULT 0.7,
     max_context_messages INTEGER NOT NULL DEFAULT 20,
@@ -130,8 +131,20 @@ CREATE INDEX IF NOT EXISTS idx_session_provider ON na_session (provider);
 """
 
 
+_MIGRATIONS_SQL = """
+-- Migration: add context_window column to na_ai_provider
+ALTER TABLE na_ai_provider ADD COLUMN IF NOT EXISTS context_window INTEGER;
+
+-- Migration: extend provider_type CHECK to include 'Claude Code'
+ALTER TABLE na_ai_provider DROP CONSTRAINT IF EXISTS na_ai_provider_provider_type_check;
+ALTER TABLE na_ai_provider ADD CONSTRAINT na_ai_provider_provider_type_check
+    CHECK (provider_type IN ('OpenAI', 'Anthropic', 'Google', 'Claude Code'));
+"""
+
+
 def ensure_schema():
 	"""Create all tables and indexes if they don't exist. Idempotent."""
 	with get_cursor() as cur:
 		cur.execute(_TABLES_SQL)
 		cur.execute(_INDEXES_SQL)
+		cur.execute(_MIGRATIONS_SQL)

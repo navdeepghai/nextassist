@@ -12,6 +12,7 @@ interface FormViewProps {
   onSave?: () => void;
   onDelete?: () => void;
   saving?: boolean;
+  saveDisabled?: boolean;
   children: ReactNode;
   sidebar?: ReactNode;
   /** Metadata for the sidebar timeline */
@@ -32,6 +33,7 @@ export function FormView({
   onSave,
   onDelete,
   saving,
+  saveDisabled,
   children,
   sidebar,
   meta,
@@ -71,7 +73,7 @@ export function FormView({
             {onSave && (
               <button
                 onClick={onSave}
-                disabled={saving}
+                disabled={saving || saveDisabled}
                 className="flex items-center gap-1.5 px-5 py-2 bg-[#007AFF] dark:bg-[#0A84FF] text-white text-[15px] font-medium rounded-xl hover:bg-[#0071E3] dark:hover:bg-[#409CFF] disabled:opacity-50 transition-colors duration-200 ease-out"
               >
                 {saving ? (

@@ -11,7 +11,7 @@ from frappe.utils.safe_exec import safe_exec
 from nextassist.ai.context_builder import get_model_for_session, get_provider_config, get_provider_for_session
 from nextassist.ai.provider_factory import get_provider
 from nextassist.ai.tools import execute_tool, get_tool_definitions
-from nextassist.database import message_db, session_db, settings_db
+from nextassist.database import message_db, provider_db, session_db, settings_db
 
 # ── Safe strftime replacement ────────────────────────────────────────────────
 # Python's date.strftime('%B') triggers a lazy import of _strptime inside
@@ -151,8 +151,12 @@ def stream_ai_response(session_name: str, user: str):
 			return
 
 		# Build tool definitions if enabled (global toggle stays in settings)
+		# Claude Code manages its own tools internally — skip NextAssist tools for it
 		tools = None
-		if settings.get("enable_tool_calling"):
+		provider_config_obj = provider_db.get_provider(provider_name)
+		if settings.get("enable_tool_calling") and (
+			not provider_config_obj or provider_config_obj.provider_type != "Claude Code"
+		):
 			tool_defs = get_tool_definitions()
 			if tool_defs:
 				tools = tool_defs

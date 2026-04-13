@@ -17,6 +17,7 @@ const PROVIDER_TYPE_COLORS: Record<string, { bg: string; text: string }> = {
   OpenAI: { bg: "bg-[#007AFF]/10 dark:bg-[#0A84FF]/12", text: "text-[#007AFF] dark:text-[#0A84FF]" },
   Anthropic: { bg: "bg-[#FF9500]/10 dark:bg-[#FF9F0A]/12", text: "text-[#FF9500] dark:text-[#FF9F0A]" },
   Google: { bg: "bg-[#34C759]/10 dark:bg-[#30D158]/12", text: "text-[#34C759] dark:text-[#30D158]" },
+  "Claude Code": { bg: "bg-purple-500/10 dark:bg-purple-400/12", text: "text-purple-500 dark:text-purple-400" },
 };
 
 const columns: Column<Provider>[] = [
@@ -113,6 +114,7 @@ const filters: FilterDef[] = [
       { value: "OpenAI", label: "OpenAI" },
       { value: "Anthropic", label: "Anthropic" },
       { value: "Google", label: "Google" },
+      { value: "Claude Code", label: "Claude Code" },
     ],
   },
   {

@@ -35,6 +35,10 @@ PROVIDER_MODELS = {
 		"gemini-2.0-flash",
 		"gemini-2.0-flash-lite",
 	],
+	"Claude Code": [
+		"claude-sonnet-4-6",
+		"claude-opus-4-6",
+	],
 }
 
 
